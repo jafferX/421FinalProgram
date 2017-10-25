@@ -14,8 +14,6 @@ void next_token();	//go to next token
 bool match(char);	//find and remove from text
 
 //Parse function declarations
-void T();	//Text (Sentences)
-void S();	//Sentence (Words)
 void W();	//Word (Syllables)
 void Y();	//Syllable
 void V();	//Vowel
@@ -70,20 +68,9 @@ bool match(char matchThis)
 	}
 }
 
-void T()
-{
-	//might be unnecessary, just to test for empty file?
-	//could do that on opening?
-}
-
-void S()
-{
-	
-}
-
 void W()
 {
-
+	//might not need this
 }
 
 void Y()
