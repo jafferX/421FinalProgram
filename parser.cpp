@@ -1,30 +1,44 @@
 #include <iostream>
 #include <stdio.h>
+#include <fstream>
 #include <string>
+#include <stack>	//grammar stack
+#include <array>	//parsing table?
 using namespace std;
 
 //Global token vars
 enum token_type{ vowel, consonant, root };		//type creation
 token_type saved_token;					//buffer, default is empty
-bool token_available = true;				//flag, default is available
+bool token_available = false;				//flag, default is unavailable
 
 //General functions
-void scanner():		//not sure where this comes into play yet
+void scanner();		//not sure where this comes into play yet
 void next_token();	//go to next token
 bool match(char);	//find and remove from text
 
-//Parse function declarations
-void W();	//Word (Syllables)
-void Y();	//Syllable
+//Nonterminal functions
 void V();	//Vowel
 void C();	//Consonants, X on paper
 void R();	//Root
 
+//Stack functions
+void fillStack();	//fills stack with parse characters
+
+//Syntax error functions
+void syntax_mismatch();		//when match() function does not match
+void syntax_default();		//when a switch statement goes to default
+
 int main()
 {
+	stack <char> gStack;	//initialize grammar stack
+	gStack.push('$');	//push terminating character onto stack
+
+	string PTable [3][3];	//parse table, default 3x3 to be changed as needed
+
 	ofstream toParse;
 	text.open("parse.txt");		//open test file
 
+	//calls story???
 	scanner(toParse);		//starts scanning for tokens???
 	
 	text.close();			//close file
@@ -32,21 +46,21 @@ int main()
 	return 0;
 }
 
-void scanner()	//grabs next token
+void scanner(token_type& the_type, string& word)	//grabs next token
 {
-
+	//W(); called in here?
 }
 
 token next_token()	//she has token here in her notes, part of enum I think
 {
-	string lexeme;
+	string lexeme;	//hold next word
 
-	if(!token_available)
+	if(!token_available)	//no saved token
 	{
-		scanner(saved_token, lexeme);
-		token_available = true;
+		scanner(saved_token, lexeme);	//finds next token
+		token_available = true;		//now has saved token
 	}
-	return saved_token;
+	return saved_token;	//return found token
 }
 
 bool match(char matchThis)
@@ -56,10 +70,12 @@ bool match(char matchThis)
 		//syntax error messages
 		
 		//match fails	
-		printf("Expected char %c...", matchThis);
+		syntax_mismatch();
+		/*printf("Expected char %c...", matchThis);*/
 
 		//switch goes to default
-		printf("Major error detected. Ending parse...");
+		syntax_default();
+		/*printf("Major error detected. Ending parse...");*/
 	}
 	else //matched
 	{
@@ -68,27 +84,17 @@ bool match(char matchThis)
 	}
 }
 
-void W()
-{
-	//might not need this
-}
-
-void Y()
+void V()	//vowel, could be followed by N
 {
 
 }
 
-void V()
+void C()	//consonant, followed by vowel
 {
 
 }
 
-void C()
-{
-
-}
-
-void R()
+void R()	//root, followed by vowel
 {
 
 }
