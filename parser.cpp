@@ -7,7 +7,10 @@
 using namespace std;
 
 //Global token vars
-enum token_type{ vowel, consonant, root };		//type creation
+enum token_type{ 
+	PERIOD, EOFM, VERB, VERBNEG, VERBPASTNEG, 
+	IS, WAS, OBJECT, SUBJECT, DESTINATION,
+	PRONOUN, CONNECTOR};		//type creation
 token_type saved_token;					//buffer, default is empty
 bool token_available = false;				//flag, default is unavailable
 
