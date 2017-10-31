@@ -1,6 +1,7 @@
 #include<iostream>
 #include<fstream>
 #include<string>
+#include<cstdlib>
 using namespace std;
 
 //=====================================================
@@ -68,7 +69,7 @@ int scanner(tokentype& a, string& w)
 
 
 // The test driver to call the scanner repeatedly  
-// ** Done by:  **
+// ** Done by:  Aaron Brunette**
 int main()
 {
   tokentype thetype;
@@ -87,6 +88,13 @@ int main()
           etc.
   */
 
+	string inputfile;
+	printf("Please enter the file name to be scanned: ");
+	getline(cin, inputfile);
+	
+	fstream toRead;
+	toRead.open(inputfile.txt | ou);
+	
   while (true)
     {
       scanner(thetype, theword);  // call the scanner
