@@ -41,7 +41,7 @@ bool mytoken(string s)
 
 
 // ** Update the tokentype to be WORD1, WORD2, PERIOD and ERROR.
-typedef enum tokentype {ERROR, };
+typedef enum tokentype {ERROR, WORD1, WORD2, PERIOD};
 
 // ** Need the lexicon to be set up here (to be used in Part C)
 // ** Need the reservedwords list to be set up here
@@ -92,8 +92,8 @@ int main()
 	printf("Please enter the file name to be scanned: ");
 	getline(cin, inputfile);
 	
-	fstream toRead;
-	toRead.open(inputfile.txt | ou);
+	ofstream toRead;
+	toRead.open(inputfile.data());
 	
   while (true)
     {
@@ -107,7 +107,7 @@ int main()
     }
 
   // ** close the input file
-
+	toRead.close();
 }// end
 
 
