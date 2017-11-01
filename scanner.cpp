@@ -26,6 +26,8 @@ void period(tokentype& a)
 }
 
 /******************************************************/
+//boolean DFA functions
+//Done by: Paul
 
 bool stateZero(string, int&);
 bool stateOne(string, int&);
@@ -37,9 +39,9 @@ bool stateSeven(string, int&);
 bool stateEight(string, int&);
 bool stateTen(string, int&);
 bool stateEleven(string, int&);
+bool stateTwelve(string, int&);
 bool stateThirteen(string, int&);
 
-//boolean DFA functions
 bool stateZero(string w, int& i)	//start
 {
 	bool result = false;
@@ -194,7 +196,7 @@ bool stateEight(string w, int& i)	//s
 	{
 		case 'h':
 			i++;
-			result = stateNine(w, i);
+			result = stateTwelve(w, i);
 			break;
 		case 'a': case 'u': case 'e': case 'o':
 			if(w[i+1] == 'n')
