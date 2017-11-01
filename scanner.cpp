@@ -31,7 +31,7 @@ bool period(tokentype& a)
 bool stateZero(&string w, int i)	//start
 {
 	bool result = false;
-	int i = 1;
+
 	
 	switch(w)
 	{
@@ -65,15 +65,15 @@ bool stateZero(&string w, int i)	//start
 	}
 }
 
-bool stateOne(&string w, i)	//Ts
+bool stateOne(string w, int& i)	//Ts
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case u:
 			i++;
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -83,15 +83,15 @@ bool stateOne(&string w, i)	//Ts
 	}
 }
 
-bool stateTwo(i)	//T
+bool stateTwo(string w, int& i)	//T
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case e: case a: case o:
 			i++;
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -105,15 +105,15 @@ bool stateTwo(i)	//T
 	}
 }
 
-bool stateFour(i)	//
+bool stateFour(string w, int& i)	//
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case a: case u: case o:
 			i++;
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -123,15 +123,15 @@ bool stateFour(i)	//
 	}
 }
 
-bool stateFive(i)
+bool stateFive(string w, int& i)
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case a:
 			i++;
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -141,16 +141,16 @@ bool stateFive(i)
 	}
 }
 
-bool stateSix(i)	//d
+bool stateSix(string w, int& i)	//d
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case e: case a: case o:
 			i++;
 			
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -160,11 +160,11 @@ bool stateSix(i)	//d
 	}
 }
 
-bool stateSeven(i)
+bool stateSeven(string w, int& i)
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case n: case a: case i: case e: case u:
 			i++;
@@ -175,18 +175,18 @@ bool stateSeven(i)
 	}
 }
 
-bool stateEight(i)	//s
+bool stateEight(string w, int& i)	//s
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case h:
 			i++;
 			result = stateNine(w, i);
 			break;
 		case a: case u: case e: case o:
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -196,11 +196,11 @@ bool stateEight(i)	//s
 	}
 }
 
-bool stateTen(&w, i)	//consonants or y-root
+bool stateTen(string w, int& i)	//consonants or y-root
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case y:
 			i++;
@@ -208,7 +208,7 @@ bool stateTen(&w, i)	//consonants or y-root
 			break;
 		case a: case i: case e: case o: case u:
 			i++;
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -218,15 +218,15 @@ bool stateTen(&w, i)	//consonants or y-root
 	}
 }
 
-bool stateEleven(i)
+bool stateEleven(string w, int& i)
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case a: case u: case o:
 			i++;
-			if(array[i+1] == 'n')
+			if(w[i+1] == 'n')
 				result = stateThirteen(w, i);
 			else
 				result = stateZero(w, i);
@@ -236,11 +236,11 @@ bool stateEleven(i)
 	}
 }
 
-bool stateThirteen(i)	//N
+bool stateThirteen(string w, int& i)	//N
 {
 	bool result = false;
 	
-	switch(&array[i])
+	switch(w[i])
 	{
 		case n:
 			i++;
@@ -258,7 +258,7 @@ bool stateThirteen(i)	//N
 int scanner(tokentype& a, string& w)
 {
 	bool result = true;	//default, word is assumed valid
-	
+	int i = 1;
      		
 		if(w[0] == '.')
 			return period(a); 
@@ -267,7 +267,7 @@ int scanner(tokentype& a, string& w)
 			a = ERROR;
 			return;
 		}
-	stateZero(w);
+	stateZero(w, i);
 	if(result == false)
 	{
 		tokentype = ERROR;
