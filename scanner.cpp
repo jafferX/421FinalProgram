@@ -26,34 +26,168 @@ bool period(tokentype& a)
 /******************************************************/
 
 //boolean DFA functions
-bool stateZero(&string w)
+bool stateZero(&string w)	//start
 {
 	switch(w)
 	{
 		case s:
-			stateEight();
+			stateEight(w);
 			break;
-		case m: case n: case k: case b: case h: case g: case p: case f:
-			stateTen();
-			break;
-		case y:
-			stateEleven();
+		case m: case n: case k: case b: case h: case g: case p: case f: case r: case p:
+			stateTen(w);
 			break;
 		case a: case i: case u: case e: case o:
-			stateTwelve();
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
 			break;
 		case t:
-			stateTwo();
-			break;
-		case r: case k: case o: case m: case n: case p: case h:
-			stateFour():
+			stateTwo(w);
 			break;
 		case d:
-			stateSix();
+			stateSix(w);
+			break;
+		case y:
+			stateFour();			/////////
+			break;
+		case w:
+			state();			////////
+			break;
+	}
+}
+
+stateOne(i)	//Ts
+{
+	switch(&array[i])
+	{
+		case u:
+			i++;
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
+	}
+}
+
+stateTwo(i)	//T
+{
+	switch(&array[i])
+	{
+		case e: case a: case o:
+			i++;
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
 			break;
 		case s:
-			stateEight();
+			i++;
+			stateOne();
 			break;
+	}
+}
+
+stateFour(i)	//
+{
+	switch(&array[i])
+	{
+		case y:
+			i++;
+			stateEleven();
+	}
+}
+
+stateFive(i)
+{
+	switch(&array[i])
+	{
+		case i: case u: case o:
+			i++;
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
+	}
+}
+
+stateSix(i)	//d
+{
+	switch(&array[i])
+	{
+		case e: case a: case o:
+			i++;
+			
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
+	}
+}
+
+stateSeven(i)
+{
+	switch(&array[i])
+	{
+		case n: case a: case i: case e: case u:
+			i++;
+			stateZero();
+	}
+}
+
+stateEight(i)	//s
+{
+	switch(&array[i])
+	{
+		case h:
+			i++;
+			stateNine();
+			break;
+		case a: case u: case e: case o:
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
+	}
+}
+
+stateTen(i)	//consonants or y-root
+{
+	switch(&array[i])
+	{
+		case y:
+			i++;
+			stateEleven();
+			break;
+		case a: case i: case e: case o: case u:
+			i++;
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
+	}
+}
+
+stateEleven(i)
+{
+	switch(&array[i])
+	{
+		case a: case u: case o:
+			i++;
+			if(array[i+1] == 'n')
+				stateThirteen();
+			else
+				stateZero();
+	}
+}
+
+stateThirteen(i)	//N
+{
+	switch(&array[i])
+	{
+		case n:
+			i++;
+			stateZero();
 	}
 }
 
@@ -65,37 +199,15 @@ int scanner(tokentype& a, string& w)
 {
 	bool result = true;	//default, word is assumed valid
 	
-     		if(w[0] == ('a' || 'i' || 'u' || 'e' || 'o'))
-		{
-			result = statetwelve(w);
-		}
-		else if(w[0] == ('b' || 'g' || 'h' || 'j' || 'k' || 'm' || 'n' || 'p' || 'r'))
-		{
-			result = stateZero(w);
-		}
-		else if(w[0] == 't')
-		{
-		
-		}
-		else if(w[0] == 'c')
-		{}
-		else if(w[0] == 'd')
-		{}
-		else if(w[0] == 's')
-		{}
-		else if(w[0] == 'z')
-		{}
-		else if(w[0] == 'w')
-		{}
-		else if(w[0] == 'y')
-		{}
-		else if(w[0] == '.')
+     		
+		if(w[0] == '.')
 			return period(a); 
 		else
 		{
 			a = ERROR;
 			return;
-		}	
+		}
+	stateZero(w);
 	if(result == false)
 	{
 		tokentype = ERROR;
