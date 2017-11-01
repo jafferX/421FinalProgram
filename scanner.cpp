@@ -7,15 +7,15 @@ using namespace std;
 
 //God Bless this spaghetti mess
 
-vector <string> reservedWords;	//vector holds reserved words
-vector <string> reservedTypes;	//hold reserved word types
-
 //=====================================================
 // File scanner.cpp written by: Group Number: 3 
 //=====================================================
 
 //Enumerated token types
 typedef enum tokentype {ERROR, WORD1, WORD2, PERIOD};
+
+vector <string> reservedWords;	//vector holds reserved words
+vector <string> reservedTypes;	//hold reserved word types
 
 // Period found, returns token
 // ** Done by: Aaron & Erik
@@ -24,6 +24,8 @@ void period(tokentype& a)
 	a = PERIOD;	//sets token
 	return;
 }
+
+bool dictionary(tokentype&, string);
 
 /******************************************************/
 //boolean DFA functions
@@ -294,23 +296,24 @@ int scanner(tokentype& a, string& w)
 	if(w == "eofm")
 		return -1;	
 	else if(w == ".")
-
-		return period(a);
+	{
+		period(a);
+		return 1;
 	} 
 	else
 	{
 		a = ERROR;
-		return;
+		return 1;
 	}
 	stateZero(w, i);
 	if(result == false)
 	{
-		tokentype = ERROR;
+		a = ERROR;
 	}
-	else if(tokem)	//valid
+	else	//valid
 	{
-		tokentype = WORD1;
-		result = dictionary(tokentype a, string w);
+		a = WORD1;
+		result = dictionary(a, w);
 	}
 }//the end
 
@@ -318,13 +321,15 @@ int scanner(tokentype& a, string& w)
 //Done by: Aaron & Erik
 bool dictionary(tokentype &a, string w)
 {
-	for(int count = 0; count <= reservedWord.length(); count++)
+	for(int count = 0; count <= reservedWords.size(); count++)
 	{
-		if(reservedWord[count] == w)
+		if(reservedWords[count] == w)
 		{
-			tokentype = reservedType[count];
-			return;
+			a = reservedTypes[count];
+			return true;
 		}
+		else
+			return false;
 	}
 }
 
@@ -340,12 +345,12 @@ int main()
 	printf("Please enter the name of file to be scanned: ");
 	getline(cin, inputfile);
 
-	ofstream toRead;
-	toRead.open(inputfile.data());
+	fstream toRead;
+	toRead.open(inputfile.c_str());
 	
 	string reserved;
-	ofstream dictionary;
-	dictionary.open()
+	fstream dictionary;
+	dictionary.open("reservedwords.txt");
 	
 	while(dictionary)	//fill reserved word vector
 	{
@@ -353,8 +358,8 @@ int main()
 		string rType;
 		dictionary >> rWord >> rType;
 		
-		reservedWord.push_back(rWord);
-		reservedType.push_back(rType);
+		reservedWords.push_back(rWord);
+		reservedTypes.push_back(rType);
 	}
 		
 	dictionary.close();
