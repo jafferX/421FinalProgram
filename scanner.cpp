@@ -5,6 +5,8 @@
 #include<vector>
 using namespace std;
 
+//God Bless this spaghetti mess
+
 vector <string> reservedWords;	//vector holds reserved words
 vector <string> reservedTypes;	//hold reserved word types
 
@@ -26,168 +28,226 @@ bool period(tokentype& a)
 /******************************************************/
 
 //boolean DFA functions
-bool stateZero(&string w)	//start
+bool stateZero(&string w, int i)	//start
 {
+	bool result = false;
+	int i = 1;
+	
 	switch(w)
 	{
 		case s:
-			stateEight(w);
+			result = stateEight(w, i);
 			break;
 		case m: case n: case k: case b: case h: case g: case p: case f: case r: case p:
-			stateTen(w);
+			result = stateTen(w, i);
 			break;
 		case a: case i: case u: case e: case o:
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
 			break;
 		case t:
-			stateTwo(w);
+			result = stateTwo(w, i);
 			break;
 		case d:
-			stateSix(w);
+			result = stateSix(w, i);
 			break;
 		case y:
-			stateFour();			/////////
+			result = stateFour(w, i);			/////////
 			break;
 		case w:
-			state();			////////
+			result = stateFive(w, i);			////////
+			
 			break;
+		default:
+			return false;
 	}
 }
 
-stateOne(i)	//Ts
+bool stateOne(&string w, i)	//Ts
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case u:
 			i++;
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
-stateTwo(i)	//T
+bool stateTwo(i)	//T
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case e: case a: case o:
 			i++;
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
 			break;
 		case s:
 			i++;
-			stateOne();
+			result = stateOne(w, i);
 			break;
+		default:
+			return false;
 	}
 }
 
-stateFour(i)	//
+bool stateFour(i)	//
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
-		case y:
-			i++;
-			stateEleven();
-	}
-}
-
-stateFive(i)
-{
-	switch(&array[i])
-	{
-		case i: case u: case o:
+		case a: case u: case o:
 			i++;
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
-stateSix(i)	//d
+bool stateFive(i)
 {
+	bool result = false;
+	
+	switch(&array[i])
+	{
+		case a:
+			i++;
+			if(array[i+1] == 'n')
+				result = stateThirteen(w, i);
+			else
+				result = stateZero(w, i);
+			break;
+		default:
+			return false;
+	}
+}
+
+bool stateSix(i)	//d
+{
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case e: case a: case o:
 			i++;
 			
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
-stateSeven(i)
+bool stateSeven(i)
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case n: case a: case i: case e: case u:
 			i++;
-			stateZero();
+			result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
-stateEight(i)	//s
+bool stateEight(i)	//s
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case h:
 			i++;
-			stateNine();
+			result = stateNine(w, i);
 			break;
 		case a: case u: case e: case o:
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
-stateTen(i)	//consonants or y-root
+bool stateTen(&w, i)	//consonants or y-root
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case y:
 			i++;
-			stateEleven();
+			result = stateEleven(w, i);
 			break;
 		case a: case i: case e: case o: case u:
 			i++;
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
-stateEleven(i)
+bool stateEleven(i)
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case a: case u: case o:
 			i++;
 			if(array[i+1] == 'n')
-				stateThirteen();
+				result = stateThirteen(w, i);
 			else
-				stateZero();
+				result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
-stateThirteen(i)	//N
+bool stateThirteen(i)	//N
 {
+	bool result = false;
+	
 	switch(&array[i])
 	{
 		case n:
 			i++;
-			stateZero();
+			result = stateZero(w, i);
+			break;
+		default:
+			return false;
 	}
 }
 
