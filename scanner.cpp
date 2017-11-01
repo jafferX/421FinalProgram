@@ -317,6 +317,7 @@ int scanner(tokentype& a, string& w)
 	}
 }//the end
 
+/*
 //
 //Done by: Aaron & Erik
 bool dictionary(tokentype &a, string w)
@@ -332,13 +333,13 @@ bool dictionary(tokentype &a, string w)
 			return false;
 	}
 }
-
+*/
 // The test driver to call the scanner repeatedly  
 // ** Done by:  Aaron & Erik
 int main()
 {
 	int eof = 1;
-  	tokentype thetype;
+  	tokentype thetype = ERROR;
   	string theword; 
 	
 	string inputfile;
@@ -372,8 +373,15 @@ int main()
 		if(eof == -1)
 			break;
 
-	       	cout << "Type is:" << thetype << endl;
-	       	cout << "Word is:" << theword << endl;   
+		if(thetype == ERROR)	
+	       		cout << "Type is:" << "ERROR" << endl;
+		else if(thetype == WORD1)
+			cout << "Type is:" << "WORD1" << endl;
+		else if(thetype == WORD2)
+			cout << "Type is:" << "WORD2" << endl;
+	       	else if(thetype == PERIOD)
+			cout << "Type is:" << "PERIOD" << endl;
+		cout << "Word is:" << theword << endl;   
     	}
 	toRead.close();
 }// end
