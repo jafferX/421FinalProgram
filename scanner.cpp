@@ -32,20 +32,28 @@ bool stateZero(&string w)
 	{
 		case s:
 			stateEight();
+			break;
 		case m: case n: case k: case b: case h: case g: case p: case f:
 			stateTen();
+			break;
 		case y:
 			stateEleven();
+			break;
 		case a: case i: case u: case e: case o:
 			stateTwelve();
+			break;
 		case t:
 			stateTwo();
+			break;
 		case r: case k: case o: case m: case n: case p: case h:
 			stateFour():
+			break;
 		case d:
 			stateSix();
+			break;
 		case s:
-			stateEight();	
+			stateEight();
+			break;
 	}
 }
 
