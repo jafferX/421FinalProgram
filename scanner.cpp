@@ -12,7 +12,7 @@ using namespace std;
 //=====================================================
 
 //Enumerated token types
-typedef enum tokentype {ERROR, WORD1, WORD2, PERIOD};
+typedef enum tokentype {ERROR, WORD1, WORD2, PERIOD, VERB, VERBNEG, VERBPAST, VERBPASTNEG, IS, WAS, OBJECT, SUBJECT, DESTINATION, PRONOUN, CONNECTOR, EOFM};
 
 vector <string> reservedWords;	//vector holds reserved words
 vector <string> reservedTypes;	//hold reserved word types
@@ -305,7 +305,7 @@ int scanner(tokentype& a, string& w)
 		a = ERROR;
 		return 1;
 	}
-	stateZero(w, i);
+	result = stateZero(w, i);
 	if(result == false)
 	{
 		a = ERROR;
@@ -317,7 +317,6 @@ int scanner(tokentype& a, string& w)
 	}
 }//the end
 
-/*
 //
 //Done by: Aaron & Erik
 bool dictionary(tokentype &a, string w)
@@ -326,20 +325,41 @@ bool dictionary(tokentype &a, string w)
 	{
 		if(reservedWords[count] == w)
 		{
-			a = reservedTypes[count];
+			if(reservedTypes[count] == "VERB")
+				a = VERB;
+			else if(reservedTypes[count] == "VERBNEG")
+				a = VERBNEG;
+			else if(reservedTypes[count] == "VERBPAST")
+				a = VERBPAST;
+			else if(reservedTypes[count] == "VERBPASTNEG")
+				a = VERBPASTNEG;
+			else if(reservedTypes[count] == "IS")
+				a = IS;
+			else if(reservedTypes[count] == "WAS")
+				a = WAS;
+			else if(reservedTypes[count] == "OBJECT")
+				a = OBJECT;
+			else if(reservedTypes[count] == "SUBJECT")
+				a = SUBJECT;
+			else if(reservedTypes[count] == "DESTINATION")
+				a = DESTINATION;
+			else if(reservedTypes[count] == "PRONOUN")
+				a = PRONOUN;
+			else if(reservedTypes[count] == "CONNECTOR")
+				a = CONNECTOR;
 			return true;
 		}
 		else
 			return false;
 	}
 }
-*/
+
 // The test driver to call the scanner repeatedly  
 // ** Done by:  Aaron & Erik
 int main()
 {
 	int eof = 1;
-  	tokentype thetype = ERROR;
+  	tokentype thetype;
   	string theword; 
 	
 	string inputfile;
