@@ -245,3 +245,34 @@ bool sRoot(string w, int& charpos)
 	else
 		return false;
 }
+
+bool tRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+	
+	if(state == 0 && w[charpos] == 's')	//ts
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && w[charpos] == 'u')	//tsu
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 0 && w[charpos] == ('a' || 'e' || 'o'))	//ta te to
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 2 && w[charpos] == 'n')	//-n
+	{
+		state = 3;
+		charpos++;
+	}
+	if(state == (2 || 3))
+		return true;
+	else
+		return false;
+}
