@@ -147,47 +147,101 @@ int main()
 	toRead.close();
 }// end
 
-bool StartState(string w)	//also final state
+bool startstate(string w)	//also final state
 {
-	int state = 0;
 	int charpos = 0;
-	bool result;		//result of bools
+	bool result;		//result of going through bools
 	
-	while(w[charpos] != '\0')
+	while(w[charpos] != '\0')	//maybe switch statement
 	{
-		if(state == 0 && w[charpos] == ('a' || 'i' || 'u' || 'e' || 'o'))	//vowels
-			result = vowels(w, state);	//pass state?
+		if(w[charpos] == ('a' || 'i' || 'u' || 'e' || 'o'))	//vowels
+			result = vowels(w, charpos);
 		else 
-		if(state == 0 && w[charpos] == ('k' || '' || '' || '' || '' || ''))
-			result = consonants(w, state);
+		if(w[charpos] == ('k' || 'n' || 'h' || 'm' || 'r' || 'g' || 'b' || 'p'))
+			result = consonants(w, charpos);
+		else
+		if(w[charpos] == 's')
+			result = sRoot(w, charpos);
+		else
+		if(w[charpos] == 't')
+			result = tRoot(w, charpos);
+		else
+		if(w[charpos] == 'c')
+			result = cRoot(w, charpos);
+		else
+		if(w[charpos] == 'w')
+			result = wConsonant(w, charpos);
+		else
+		if(w[charpos] == 'y')
+			result = yConsonant(w, charpos);
+		else			//invalid character
+			return false;
+		
+		if(result == false)	//failed inside somewhere
+			return false;
+		charpos++;
 	}
 }
 
-bool sCharacter(string w)
-{ 
-  	int state = 1;
-	int charpos = 1;
-
-  	while (w[charpos] != '\0') 
-  	{
-      	//cout << "current state: " << state << endl;
-      	//cout << "character: " << s[charpos] << endl;
- 
-      		if (state == 1 && s[charpos] == 'h')	//sh
-      			state = 2;
-      		else if (state == 1 && s[charpos] == ('a' || 'u' || 'e' || 'o'))	//sa su se so
-      			state = 3;
-		else if (state == 2 && s[charpos] == 'i')	//shi
-			state = 3;
-		else if (state == 3 && s[charpos] == 'n')	//san shin sun sen son
-			state = 3;
-		else
-	  		return(false);
-      		
+bool vowels(string w, int& charpos)
+{
+	int state = 0;
+	
+	if(w[charpos + 1] == n)
+	{
 		charpos++;
-    	}//end of while
+		return true;
+	}
+	else
+		return true;
+}
 
-  // where did I end up????
-  if (state == 2) return(true);  // end in a final state
-   else return(false);
+bool consonants(string w, int& charpos)
+{	
+	int state = 0;
+	charpos++;
+
+	if(state == 0 && w[charpos] == ('a' || 'i' || 'u' || 'e' || 'o'))	//cv
+		state = 1;
+
+	charpos++;
+
+	if(state == 1 && w[charpos] == 'n')	//-n
+		state = 2;
+
+  	if(state == (1 || 2)) 
+		return true;  // end in a final state
+   	else 
+		return false;
+}
+
+bool sRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+	
+	if(state == 0 && w[charpos] == 'h')	//sh
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && w[charpos] == ('a' || 'i' || 'u' || 'o'))	//sha shi shu sho
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 0 && w[charpos] == ('a' || 'u' || 'e' || 'o'))	//sa su se so
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 2 && w[charpos] == 'n')	//-n
+	{
+		state = 3;
+		charpos++;
+	}
+	if(state == (2 || 3))
+		return true;
+	else
+		return false;
 }
