@@ -17,6 +17,8 @@ typedef enum tokentype {ERROR, WORD1, WORD2, PERIOD, VERB, VERBNEG, VERBPAST, VE
 vector <string> reservedWords;	//vector holds reserved words
 vector <string> reservedTypes;	//hold reserved word types
 
+bool dictionary(tokentype&, string);	//search dictionary for valid reserved words
+
 // Period found, returns token
 // ** Done by: Aaron & Erik
 void period(tokentype& a)
@@ -24,267 +26,6 @@ void period(tokentype& a)
 	a = PERIOD;	//sets token
 	return;
 }
-
-bool dictionary(tokentype&, string);
-
-/******************************************************/
-//boolean DFA functions
-//Done by: Paul
-
-bool stateZero(string, int&);
-bool stateOne(string, int&);
-bool stateTwo(string, int&);
-bool stateFour(string, int&);
-bool stateFive(string, int&);
-bool stateSix(string, int&);
-bool stateSeven(string, int&);
-bool stateEight(string, int&);
-bool stateTen(string, int&);
-bool stateEleven(string, int&);
-bool stateTwelve(string, int&);
-bool stateThirteen(string, int&);
-
-bool stateZero(string w, int& i)	//start
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 's': case 'c':
-			result = stateEight(w, i);
-			break;
-		case 'm': case 'n': case 'k': case 'b': case 'h': case 'g': case 'p': case 'f': case 'r':
-			result = stateTen(w, i);
-			break;
-		case 'a': case 'i': case 'u': case 'e': case 'o':
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		case 't':
-			result = stateTwo(w, i);
-			break;
-		case 'd':
-			result = stateSix(w, i);
-			break;
-		case 'y':
-			result = stateFour(w, i);			/////////
-			break;
-		case 'w':
-			result = stateFive(w, i);			////////
-			
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateOne(string w, int& i)	//Ts
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'u':
-			i++;
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateTwo(string w, int& i)	//T
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'e': case 'a': case 'o':
-			i++;
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		case 's':
-			i++;
-			result = stateOne(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateFour(string w, int& i)	//
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'a': case 'u': case 'o':
-			i++;
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateFive(string w, int& i)
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'a':
-			i++;
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateSix(string w, int& i)	//d
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'e': case 'a': case 'o':
-			i++;
-			
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateSeven(string w, int& i)
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'n': case 'a': case 'i': case 'e': case 'u':
-			i++;
-			result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateEight(string w, int& i)	//s
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'h':
-			i++;
-			result = stateTwelve(w, i);
-			break;
-		case 'a': case 'u': case 'e': case 'o':
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateTen(string w, int& i)	//consonants or y-root
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'y':
-			i++;
-			result = stateEleven(w, i);
-			break;
-		case 'a': case 'i': case 'e': case 'o': case 'u':
-			i++;
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateEleven(string w, int& i)
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'a': case 'u': case 'o':
-			i++;
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateTwelve(string w, int& i)
-{
-	bool result = false;
-
-	switch(w[i])
-	{
-		case 'a': case 'u': case 'o': case 'i':
-			i++;
-			if(w[i+1] == 'n')
-				result = stateThirteen(w, i);
-			else
-				result = stateZero(w,i);
-			break;
-		default:
-			return false;
-	}
-}
-
-bool stateThirteen(string w, int& i)	//N
-{
-	bool result = false;
-	
-	switch(w[i])
-	{
-		case 'n':
-			i++;
-			result = stateZero(w, i);
-			break;
-		default:
-			return false;
-	}
-}
-
-/******************************************************/
 
 // Scanner processes only one word each time it is called
 // ** Done by: Aaron & Erik
@@ -405,3 +146,36 @@ int main()
     	}
 	toRead.close();
 }// end
+
+bool mytoken(string s)	//edit this
+{ 
+  int state = 0;
+  int charpos = 0;
+
+  cout << "Trying the mytoken machine..." << endl;  
+ 
+  while (s[charpos] != '\0') 
+    {
+      cout << "current state: " << state << endl;
+      cout << "character: " << s[charpos] << endl;
+ 
+      if (state == 0 && s[charpos] == 'a')
+      state = 1;
+      else
+      if (state == 1 && s[charpos] == 'b')
+      state = 2;
+      else
+      if (state == 2 && s[charpos] == 'b')
+      state = 2;
+      else
+	{
+	  cout << "I am stuck in state " << state << endl;
+	  return(false);
+	}
+      charpos++;
+    }//end of while
+
+  // where did I end up????
+  if (state == 2) return(true);  // end in a final state
+   else return(false);
+}
