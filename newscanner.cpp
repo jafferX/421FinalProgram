@@ -147,33 +147,45 @@ int main()
 	toRead.close();
 }// end
 
-bool mytoken(string s)	//edit this
-{ 
-  int state = 0;
-  int charpos = 0;
-
-  cout << "Trying the mytoken machine..." << endl;  
- 
-  while (s[charpos] != '\0') 
-    {
-      cout << "current state: " << state << endl;
-      cout << "character: " << s[charpos] << endl;
- 
-      if (state == 0 && s[charpos] == 'a')
-      state = 1;
-      else
-      if (state == 1 && s[charpos] == 'b')
-      state = 2;
-      else
-      if (state == 2 && s[charpos] == 'b')
-      state = 2;
-      else
+bool StartState(string w)	//also final state
+{
+	int state = 0;
+	int charpos = 0;
+	bool result;		//result of bools
+	
+	while(w[charpos] != '\0')
 	{
-	  cout << "I am stuck in state " << state << endl;
-	  return(false);
+		if(state == 0 && w[charpos] == ('a' || 'i' || 'u' || 'e' || 'o'))	//vowels
+			result = vowels(w, state);	//pass state?
+		else 
+		if(state == 0 && w[charpos] == ('k' || '' || '' || '' || '' || ''))
+			result = consonants(w, state);
 	}
-      charpos++;
-    }//end of while
+}
+
+bool sCharacter(string w)
+{ 
+  	int state = 1;
+	int charpos = 1;
+
+  	while (w[charpos] != '\0') 
+  	{
+      	//cout << "current state: " << state << endl;
+      	//cout << "character: " << s[charpos] << endl;
+ 
+      		if (state == 1 && s[charpos] == 'h')	//sh
+      			state = 2;
+      		else if (state == 1 && s[charpos] == ('a' || 'u' || 'e' || 'o'))	//sa su se so
+      			state = 3;
+		else if (state == 2 && s[charpos] == 'i')	//shi
+			state = 3;
+		else if (state == 3 && s[charpos] == 'n')	//san shin sun sen son
+			state = 3;
+		else
+	  		return(false);
+      		
+		charpos++;
+    	}//end of while
 
   // where did I end up????
   if (state == 2) return(true);  // end in a final state
