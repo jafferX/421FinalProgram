@@ -34,13 +34,16 @@ bool vowels(string w, int& charpos)
 {
 	int state = 0;
 	
-	if(w[charpos + 1] == n)
+	if(w[charpos + 1] == 'n')
+	{
+		charpos++; charpos++;
+		return true;
+	}
+	else
 	{
 		charpos++;
 		return true;
 	}
-	else
-		return true;
 }
 
 bool consonants(string w, int& charpos)
@@ -48,7 +51,7 @@ bool consonants(string w, int& charpos)
 	int state = 0;
 	charpos++;
 
-	if(state == 0 && w[charpos] == ('a' || 'i' || 'u' || 'e' || 'o'))	//cv
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//cv
 		state = 1;
 
 	charpos++;
@@ -72,12 +75,12 @@ bool sRoot(string w, int& charpos)
 		state = 1;
 		charpos++;
 	}
-	if(state == 1 && w[charpos] == ('a' || 'i' || 'u' || 'o'))	//sha shi shu sho
+	if(state == 1 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'o'))	//sha shi shu sho
 	{
 		state = 2;
 		charpos++;
 	}
-	if(state == 0 && w[charpos] == ('a' || 'u' || 'e' || 'o'))	//sa su se so
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//sa su se so
 	{
 		state = 2;
 		charpos++;
@@ -87,7 +90,7 @@ bool sRoot(string w, int& charpos)
 		state = 3;
 		charpos++;
 	}
-	if(state == (2 || 3))
+	if(state == 2 || state == 3)
 		return true;
 	else
 		return false;
@@ -108,18 +111,22 @@ bool tRoot(string w, int& charpos)
 		state = 2;
 		charpos++;
 	}
-	if(state == 0 && w[charpos] == ('a' || 'e' || 'o'))	//ta te to
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'e' || w[charpos] == 'o'))	//ta te to
 	{
 		state = 2;
 		charpos++;
+		cout << "charpos: " << charpos << endl;
 	}
 	if(state == 2 && w[charpos] == 'n')	//-n
 	{
 		state = 3;
 		charpos++;
 	}
-	if(state == (2 || 3))
+	if(state == 2 || state == 3)
+	{
+		cout << "returning true..." << endl;
 		return true;
+	}
 	else
 		return false;
 }
@@ -154,7 +161,7 @@ bool wRoot(string w, int& charpos)
 {
 	int state = 0;
 	charpos++;
-	
+
 	if(state == 0 && w[charpos] == 'a')	//wa
 	{
 		state = 1;
@@ -165,7 +172,7 @@ bool wRoot(string w, int& charpos)
 		state = 2;
 		charpos++;
 	}
-	if(state == (1 || 2))
+	if(state == 1 || state == 2)
 		return true;
 	else
 		return false;
@@ -176,7 +183,7 @@ bool yRoot(string w, int& charpos)
 	int state = 0;
 	charpos++;
 	
-	if(state == 0 && w[charpos] == ('a' || 'u' || 'o'))	//ya yu yo
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o'))	//ya yu yo
 	{
 		state = 1;
 		charpos++;
@@ -195,14 +202,14 @@ bool yRoot(string w, int& charpos)
 bool startstate(string w)	//also final state
 {
 	int charpos = 0;
-	bool result;		//result of going through bools
-	
+	bool result = true;		//result of going through bools
+
 	while(w[charpos] != '\0')	//maybe switch statement
 	{
-		if(w[charpos] == ('a' || 'i' || 'u' || 'e' || 'o'))	//vowels
+		if(w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o')	//vowels
 			result = vowels(w, charpos);
 		else 
-		if(w[charpos] == ('k' || 'n' || 'h' || 'm' || 'r' || 'g' || 'b' || 'p'))
+		if(w[charpos] == 'k' || w[charpos] == 'k' || w[charpos] == 'n' || w[charpos] == 'h' || w[charpos] == 'm' || w[charpos] == 'r' || w[charpos] == 'g' || w[charpos] == 'b' || w[charpos] == 'p')
 			result = consonants(w, charpos);
 		else
 		if(w[charpos] == 's')
@@ -220,12 +227,19 @@ bool startstate(string w)	//also final state
 		if(w[charpos] == 'y')
 			result = yRoot(w, charpos);
 		else			//invalid character
-			return false;
-		
+		{
+			cout << "returning false, invalid character..." << endl
+				<< "character is: " << w[charpos] << endl;
+			return false;	
+		}
+
 		if(result == false)	//failed inside somewhere
+		{
+			cout << "returning false, failed inside bools..." << endl;
 			return false;
-		charpos++;
+		}
 	}
+	return true;
 }
 
 /*******************************************************************/
@@ -244,12 +258,7 @@ int scanner(tokentype& a, string& w)
 		period(a);
 		return 1;
 	} 
-	else
-	{
-		a = ERROR;
-		return 1;
-	}
-	result = StartState(w);
+	result = startstate(w);
 	if(result == false)
 	{
 		a = ERROR;
@@ -257,6 +266,7 @@ int scanner(tokentype& a, string& w)
 	else	//valid
 	{
 		a = WORD1;
+		cout << "entering dictionary..." << endl;
 		result = dictionary(a, w);
 	}
 }//the end
@@ -264,8 +274,8 @@ int scanner(tokentype& a, string& w)
 //
 //Done by: Aaron & Erik
 bool dictionary(tokentype &a, string w)
-{
-	for(int count = 0; count <= reservedWords.size(); count++)
+{	
+	for(int count = 0; count <= (reservedWords.size() - 1); count++)
 	{
 		if(reservedWords[count] == w)
 		{
@@ -291,11 +301,11 @@ bool dictionary(tokentype &a, string w)
 				a = PRONOUN;
 			else if(reservedTypes[count] == "CONNECTOR")
 				a = CONNECTOR;
+			
 			return true;
 		}
-		else
-			return false;
 	}
+	return false;
 }
 
 // The test driver to call the scanner repeatedly  
@@ -332,6 +342,7 @@ int main()
 	while (toRead)
 	{
 		toRead >> theword;
+		cout << "entering scanner..." << endl;
 	      	eof = scanner(thetype, theword);  // call the scanner
 
 		if(eof == -1)
