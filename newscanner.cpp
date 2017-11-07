@@ -46,7 +46,7 @@ int scanner(tokentype& a, string& w)
 		a = ERROR;
 		return 1;
 	}
-	result = stateZero(w, i);
+	result = StartState(w);
 	if(result == false)
 	{
 		a = ERROR;
