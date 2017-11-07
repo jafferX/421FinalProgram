@@ -170,10 +170,10 @@ bool startstate(string w)	//also final state
 			result = cRoot(w, charpos);
 		else
 		if(w[charpos] == 'w')
-			result = wConsonant(w, charpos);
+			result = wRoot(w, charpos);
 		else
 		if(w[charpos] == 'y')
-			result = yConsonant(w, charpos);
+			result = yRoot(w, charpos);
 		else			//invalid character
 			return false;
 		
@@ -272,6 +272,74 @@ bool tRoot(string w, int& charpos)
 		charpos++;
 	}
 	if(state == (2 || 3))
+		return true;
+	else
+		return false;
+}
+
+bool cRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+	
+	if(state == 0 && w[charpos] == 'h')	//ch
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && w[charpos] == 'i')	//chi
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 2 && w[charpos] == 'n')	//-n
+	{
+		state = 3;
+		charpos++;
+	}
+	if(state == (2 || 3))
+		return true;
+	else
+		return false;
+}
+
+bool wRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+	
+	if(state == 0 && w[charpos] == 'a')	//wa
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && w[charpos] == 'n')	//wan
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == (1 || 2))
+		return true;
+	else
+		return false;
+}
+
+bool yRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+	
+	if(state == 0 && w[charpos] == ('a' || 'u' || 'o'))	//ya yu yo
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && w[charpos] == 'n')	//yan yun yon
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == (1 || 2))
 		return true;
 	else
 		return false;
