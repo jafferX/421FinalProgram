@@ -52,14 +52,26 @@ bool consonants(string w, int& charpos)
 	charpos++;
 
 	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//cv
-		state = 1;
-
-	charpos++;
-
-	if(state == 1 && w[charpos] == 'n')	//-n
+	{	
 		state = 2;
-
-  	if(state == (1 || 2)) 
+		charpos++;
+	}
+	if(state == 0 && w[charpos] == 'y')	//Cy
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o'))
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 2 && w[charpos] == 'n')	//-n
+	{
+		charpos++;
+		state = 3;
+	}
+  	if(state == 2 || state == 3) 
 		return true;  // end in a final state
    	else 
 		return false;
@@ -96,6 +108,17 @@ bool sRoot(string w, int& charpos)
 		return false;
 }
 
+bool jRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if(state == 0 && w[charpos] == 'i')	//ji
+		return true;
+	else 
+		return false;
+}
+
 bool tRoot(string w, int& charpos)
 {
 	int state = 0;
@@ -115,7 +138,6 @@ bool tRoot(string w, int& charpos)
 	{
 		state = 2;
 		charpos++;
-		cout << "charpos: " << charpos << endl;
 	}
 	if(state == 2 && w[charpos] == 'n')	//-n
 	{
@@ -123,10 +145,28 @@ bool tRoot(string w, int& charpos)
 		charpos++;
 	}
 	if(state == 2 || state == 3)
-	{
-		cout << "returning true..." << endl;
 		return true;
+	else
+		return false;
+}
+
+bool dRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'e' || w[charpos] == 'o'))	//da de do
+	{
+		state = 1;
+		charpos++;
 	}
+	if(state == 1 && w[charpos] == 'n')
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 1 || state == 2)
+		return true;
 	else
 		return false;
 }
@@ -215,8 +255,14 @@ bool startstate(string w)	//also final state
 		if(w[charpos] == 's')
 			result = sRoot(w, charpos);
 		else
+		if(w[charpos] == 'j')
+			result = jRoot(w, charpos);
+		else
 		if(w[charpos] == 't')
 			result = tRoot(w, charpos);
+		else
+		if(w[charpos] == 'd')
+			result = dRoot(w, charpos);
 		else
 		if(w[charpos] == 'c')
 			result = cRoot(w, charpos);
@@ -228,14 +274,21 @@ bool startstate(string w)	//also final state
 			result = yRoot(w, charpos);
 		else			//invalid character
 		{
-			cout << "returning false, invalid character..." << endl
+			cout << "invalid character..." << endl
 				<< "character is: " << w[charpos] << endl;
 			return false;	
 		}
 
+		/*cout << "charpos: " << charpos << endl;
+		cout << "char: " << w[charpos] << endl;
+		cout << "result: " << result << endl; */
+
+		if(w[charpos] == 'I' || w[charpos] == 'E')
+			return true;
+
 		if(result == false)	//failed inside somewhere
 		{
-			cout << "returning false, failed inside bools..." << endl;
+			cout << "failed inside bools..." << endl;
 			return false;
 		}
 	}
@@ -265,9 +318,15 @@ int scanner(tokentype& a, string& w)
 	}
 	else	//valid
 	{
-		a = WORD1;
-		cout << "entering dictionary..." << endl;
-		result = dictionary(a, w);
+		if(isupper(w[w.size()-1]))	//word2
+		{
+			a = WORD2;
+		}
+		else
+		{
+			a = WORD1;
+			result = dictionary(a, w);
+		}
 	}
 }//the end
 
@@ -342,21 +401,42 @@ int main()
 	while (toRead)
 	{
 		toRead >> theword;
-		cout << "entering scanner..." << endl;
-	      	eof = scanner(thetype, theword);  // call the scanner
+		eof = scanner(thetype, theword);  // call the scanner
 
 		if(eof == -1)
 			break;
 
 		if(thetype == ERROR)	
-	       		cout << "Type is:" << "ERROR" << endl;
+	       		cout << "Type is: " << "ERROR" << endl;
 		else if(thetype == WORD1)
-			cout << "Type is:" << "WORD1" << endl;
+			cout << "Type is: " << "WORD1" << endl;
 		else if(thetype == WORD2)
-			cout << "Type is:" << "WORD2" << endl;
+			cout << "Type is: " << "WORD2" << endl;
 	       	else if(thetype == PERIOD)
-			cout << "Type is:" << "PERIOD" << endl;
-		cout << "Word is:" << theword << endl;   
+			cout << "Type is: " << "PERIOD" << endl;
+		else if(thetype == VERB)
+			cout << "Type is: " << "VERB" << endl;
+		else if(thetype == VERBPAST)
+			cout << "Type is: " << "VERPAST" << endl;
+		else if(thetype == VERBNEG)
+			cout << "Type is: " << "VERBNEG" << endl;
+		else if(thetype == VERBPASTNEG)
+			cout << "Type is: " << "VERBPASTNEG" << endl;
+		else if(thetype == IS)
+			cout << "Type is: " << "IS" << endl;
+		else if(thetype == WAS)
+			cout << "Type is: " << "WAS" << endl;
+		else if(thetype == OBJECT)
+			cout << "Type is: " << "OBJECT" << endl;
+		else if(thetype == SUBJECT)
+			cout << "Type is: " << "SUBJECT" << endl;
+		else if(thetype == DESTINATION)
+			cout << "Type is: " << "DESTINATION" << endl;
+		else if(thetype == PRONOUN)
+			cout << "Type is: " << "PRONOUN" << endl;
+		else if(thetype == CONNECTOR)
+			cout << "Type is: " << "CONNECTOR" << endl;
+		cout << "Word is: " << theword << endl << endl;   
     	}
 	toRead.close();
 }// end
