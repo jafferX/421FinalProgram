@@ -2,7 +2,6 @@
 #include<fstream>
 #include<string>
 #include<cstdlib>
-#include<vector>
 using namespace std;
 
 //God Bless this spaghetti mess
@@ -12,10 +11,7 @@ using namespace std;
 //=====================================================
 
 //Enumerated token types
-typedef enum tokentype {ERROR, WORD1, WORD2, PERIOD, VERB, VERBNEG, VERBPAST, VERBPASTNEG, IS, WAS, OBJECT, SUBJECT, DESTINATION, PRONOUN, CONNECTOR, EOFM};
-
-vector <string> reservedWords;	//vector holds reserved words
-vector <string> reservedTypes;	//hold reserved word types
+enum tokentype {ERROR, WORD1, WORD2, PERIOD, VERB, VERBNEG, VERBPAST, VERBPASTNEG, IS, WAS, OBJECT, SUBJECT, DESTINATION, PRONOUN, CONNECTOR, EOFM};
 
 bool dictionary(tokentype&, string);	//search dictionary for valid reserved words
 
@@ -28,7 +24,7 @@ void period(tokentype& a)
 }
 
 /*****************************************************/
-//bools
+//bools: rewritten by Aaron
 
 bool vowels(string w, int& charpos)
 {
@@ -298,34 +294,28 @@ bool startstate(string w)	//also final state
 		if(w[charpos] == 'y')
 			result = yRoot(w, charpos);
 		else			//invalid character
-		{
-			cout << "invalid character..." << endl
-				<< "character is: " << w[charpos] << endl;
 			return false;	
-		}
-
-		/*cout << "charpos: " << charpos << endl;
-		cout << "char: " << w[charpos] << endl;
-		cout << "result: " << result << endl; */
 
 		if(w[charpos] == 'I' || w[charpos] == 'E')
 			return true;
 
 		if(result == false)	//failed inside somewhere
-		{
-			cout << "failed inside bools..." << endl;
 			return false;
-		}
 	}
 	return true;
 }
 
 /*******************************************************************/
 
+fstream toRead;  // ** stream is global
+fstream reservedwords;
+
 // Scanner processes only one word each time it is called
 // ** Done by: Aaron & Erik
 int scanner(tokentype& a, string& w)
 {
+  toRead >> w;  // ** must read from a file here
+
 	bool result = true;	//default, word is assumed valid
 	int i = 0;
      	
@@ -355,42 +345,53 @@ int scanner(tokentype& a, string& w)
 	}
 }//the end
 
-//
+//:w
+
 //Done by: Aaron & Erik
 bool dictionary(tokentype &a, string w)
 {	
-	for(int count = 0; count <= (reservedWords.size() - 1); count++)
+	string rWord;
+	string rType;
+
+	reservedwords.open("reservedwords.txt");
+
+	while(reservedwords >> rWord)
 	{
-		if(reservedWords[count] == w)
+		reservedwords >> rWord >> rType;
+
+		if(rWord == w)
 		{
-			if(reservedTypes[count] == "VERB")
+			if(rType == "VERB")
 				a = VERB;
-			else if(reservedTypes[count] == "VERBNEG")
+			else if(rType == "VERBNEG")
 				a = VERBNEG;
-			else if(reservedTypes[count] == "VERBPAST")
+			else if(rType == "VERBPAST")
 				a = VERBPAST;
-			else if(reservedTypes[count] == "VERBPASTNEG")
+			else if(rType == "VERBPASTNEG")
 				a = VERBPASTNEG;
-			else if(reservedTypes[count] == "IS")
+			else if(rType == "IS")
 				a = IS;
-			else if(reservedTypes[count] == "WAS")
+			else if(rType == "WAS")
 				a = WAS;
-			else if(reservedTypes[count] == "OBJECT")
+			else if(rType == "OBJECT")
 				a = OBJECT;
-			else if(reservedTypes[count] == "SUBJECT")
+			else if(rType == "SUBJECT")
 				a = SUBJECT;
-			else if(reservedTypes[count] == "DESTINATION")
+			else if(rType == "DESTINATION")
 				a = DESTINATION;
-			else if(reservedTypes[count] == "PRONOUN")
+			else if(rType == "PRONOUN")
 				a = PRONOUN;
-			else if(reservedTypes[count] == "CONNECTOR")
+			else if(rType == "CONNECTOR")
 				a = CONNECTOR;
 			
+			reservedwords.close();
 			return true;
 		}
 	}
+	reservedwords.close();
 	return false;
 }
+
 
 // The test driver to call the scanner repeatedly  
 // ** Done by:  Aaron & Erik
@@ -404,63 +405,50 @@ int main()
 	printf("Please enter the name of file to be scanned: ");
 	getline(cin, inputfile);
 
-	fstream toRead;
 	toRead.open(inputfile.c_str());
-	
-	string reserved;
-	fstream dictionary;
-	dictionary.open("reservedwords.txt");
-	
-	while(dictionary)	//fill reserved word vector
-	{
-		string rWord; 
-		string rType;
-		dictionary >> rWord >> rType;
-		
-		reservedWords.push_back(rWord);
-		reservedTypes.push_back(rType);
-	}
-		
-	dictionary.close();
 
-	while (toRead)
+	while (true)  //** should not use the stream yet so I took it out
 	{
-		toRead >> theword;
+
 		eof = scanner(thetype, theword);  // call the scanner
 
 		if(eof == -1)
 			break;
 
+		//optimize this with operator overload
 		if(thetype == ERROR)	
-	       		cout << "Type is: " << "ERROR" << endl;
+                {
+			cout << "Lexical error: " << theword << " is not a valid token" << endl;
+	       		cout << "Type is: " << "ERROR   ";
+		}
 		else if(thetype == WORD1)
-			cout << "Type is: " << "WORD1" << endl;
+			cout << "Type is: " << "WORD1   ";
 		else if(thetype == WORD2)
-			cout << "Type is: " << "WORD2" << endl;
+			cout << "Type is: " << "WORD2   ";
 	       	else if(thetype == PERIOD)
-			cout << "Type is: " << "PERIOD" << endl;
+			cout << "Type is: " << "PERIOD   ";
 		else if(thetype == VERB)
-			cout << "Type is: " << "VERB" << endl;
+			cout << "Type is: " << "VERB   ";
 		else if(thetype == VERBPAST)
-			cout << "Type is: " << "VERPAST" << endl;
+			cout << "Type is: " << "VERPAST   ";
 		else if(thetype == VERBNEG)
-			cout << "Type is: " << "VERBNEG" << endl;
+			cout << "Type is: " << "VERBNEG   ";
 		else if(thetype == VERBPASTNEG)
-			cout << "Type is: " << "VERBPASTNEG" << endl;
+			cout << "Type is: " << "VERBPASTNEG   ";
 		else if(thetype == IS)
-			cout << "Type is: " << "IS" << endl;
+			cout << "Type is: " << "IS   ";
 		else if(thetype == WAS)
-			cout << "Type is: " << "WAS" << endl;
+			cout << "Type is: " << "WAS   ";
 		else if(thetype == OBJECT)
-			cout << "Type is: " << "OBJECT" << endl;
+			cout << "Type is: " << "OBJECT   ";
 		else if(thetype == SUBJECT)
-			cout << "Type is: " << "SUBJECT" << endl;
+			cout << "Type is: " << "SUBJECT   ";
 		else if(thetype == DESTINATION)
-			cout << "Type is: " << "DESTINATION" << endl;
+			cout << "Type is: " << "DESTINATION   ";
 		else if(thetype == PRONOUN)
-			cout << "Type is: " << "PRONOUN" << endl;
+			cout << "Type is: " << "PRONOUN   ";
 		else if(thetype == CONNECTOR)
-			cout << "Type is: " << "CONNECTOR" << endl;
+			cout << "Type is: " << "CONNECTOR   ";
 		cout << "Word is: " << theword << endl << endl;   
     	}
 	toRead.close();
