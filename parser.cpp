@@ -7,19 +7,20 @@
 using namespace std;
 
 //Global token vars
-enum token_type{ 
+enum token_type{ 	//valid token type creation
 	PERIOD, EOFM, VERB, VERBNEG, VERBPASTNEG, 
 	IS, WAS, OBJECT, SUBJECT, DESTINATION,
-	PRONOUN, CONNECTOR};		//type creation
-token_type saved_token;					//buffer, default is empty
-bool token_available = false;				//flag, default is unavailable
+	PRONOUN, CONNECTOR};
+token_type saved_token;			//buffer, default is empty
+bool token_available = false;		//flag, default is unavailable
+fstream toParse;			//global stream to parse file
 
 //General functions
 void scanner();		//not sure where this comes into play yet
 void next_token();	//go to next token
 bool match(char);	//find and remove from text
 
-//Nonterminal functions
+//Nonterminal functions, these are something else I think
 void V();	//Vowel
 void C();	//Consonants, X on paper
 void R();	//Root
@@ -37,12 +38,16 @@ int main()
 	gStack.push('$');	//push terminating character onto stack
 
 	string PTable [3][3];	//parse table, default 3x3 to be changed as needed
+	string uInput;
+	
+	printf("Please enter the name of the file you'd like to parse: ");
+	getline(cin, uInput);
 
-	ofstream toParse;
-	text.open("parse.txt");		//open test file
+	text.open(uInput.c_str());		//open test file
 
 	//calls story???
 	scanner(toParse);		//starts scanning for tokens???
+	//scanner calls next_token and match in itself?
 	
 	text.close();			//close file
 
