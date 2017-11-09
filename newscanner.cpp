@@ -108,6 +108,27 @@ bool sRoot(string w, int& charpos)
 		return false;
 }
 
+bool zRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//sa su se so
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && w[charpos] == 'n')
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 1 || state == 2)
+		return true;
+	else
+		return false;
+}
+
 bool jRoot(string w, int& charpos)
 {
 	int state = 0;
@@ -191,7 +212,8 @@ bool cRoot(string w, int& charpos)
 		state = 3;
 		charpos++;
 	}
-	if(state == (2 || 3))
+
+	if(state == 2 || state == 3)
 		return true;
 	else
 		return false;
@@ -249,11 +271,14 @@ bool startstate(string w)	//also final state
 		if(w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o')	//vowels
 			result = vowels(w, charpos);
 		else 
-		if(w[charpos] == 'k' || w[charpos] == 'k' || w[charpos] == 'n' || w[charpos] == 'h' || w[charpos] == 'm' || w[charpos] == 'r' || w[charpos] == 'g' || w[charpos] == 'b' || w[charpos] == 'p')
+		if(w[charpos] == 'k' || w[charpos] == 'n' || w[charpos] == 'h' || w[charpos] == 'm' || w[charpos] == 'r' || w[charpos] == 'g' || w[charpos] == 'b' || w[charpos] == 'p')
 			result = consonants(w, charpos);
 		else
 		if(w[charpos] == 's')
 			result = sRoot(w, charpos);
+		else
+		if(w[charpos] == 'z')
+			result = zRoot(w, charpos);
 		else
 		if(w[charpos] == 'j')
 			result = jRoot(w, charpos);
