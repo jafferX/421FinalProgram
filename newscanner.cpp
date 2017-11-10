@@ -4,16 +4,33 @@
 #include<cstdlib>
 using namespace std;
 
-//God Bless this spaghetti mess
-
 //=====================================================
 // File scanner.cpp written by: Group Number: 3 
 //=====================================================
 
 //Enumerated token types
-enum tokentype {ERROR, WORD1, WORD2, PERIOD, VERB, VERBNEG, VERBPAST, VERBPASTNEG, IS, WAS, OBJECT, SUBJECT, DESTINATION, PRONOUN, CONNECTOR, EOFM};
+enum tokentype{
+ERROR, WORD1, WORD2, PERIOD, 
+VERB, VERBNEG, VERBPAST, VERBPASTNEG, 
+IS, WAS, OBJECT, SUBJECT, DESTINATION, 
+PRONOUN, CONNECTOR, EOFM};
 
-bool dictionary(tokentype&, string);	//search dictionary for valid reserved words
+//global file streams
+fstream toRead;
+
+//reservedwords array initialization
+const int arraySize = 38;
+string reservedwords[arraySize] = {
+"masu", "VERB", "masen", "VERBNEG", "mashita", "VERBPAST", 
+"masendeshita", "VERBPASTNEG", "desu", "IS", "deshita", "WAS", 
+"o", "OBJECT", "wa", "SUBJECT", "ni", "DESTINATION", 
+"watashi", "PRONOUN", "anata", "PRONOUN", "kare", "PRONOUN", 
+"kanojo", "PRONOUN", "sore", "PRONOUN", "mata", "CONNECTOR", 
+"soshite", "CONNECTOR", "shikashi", "CONNECTOR", 
+"dakara", "CONNECTOR", "eofm", "EOFM"};
+
+//word checker prototype
+bool dictionary(tokentype&, string);
 
 // Period found, returns token
 // ** Done by: Aaron & Erik
@@ -23,14 +40,13 @@ void period(tokentype& a)
 	return;
 }
 
-/*****************************************************/
 //bools: rewritten by Aaron
-
+//check vowels
 bool vowels(string w, int& charpos)
 {
 	int state = 0;
 	
-	if(w[charpos + 1] == 'n')
+	if(w[charpos + 1] == 'n')	//Vn
 	{
 		charpos++; charpos++;
 		return true;
@@ -42,12 +58,13 @@ bool vowels(string w, int& charpos)
 	}
 }
 
+//check consonants
 bool consonants(string w, int& charpos)
 {	
 	int state = 0;
 	charpos++;
 
-	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//cv
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//CV
 	{	
 		state = 2;
 		charpos++;
@@ -57,7 +74,7 @@ bool consonants(string w, int& charpos)
 		state = 1;
 		charpos++;
 	}
-	if(state == 1 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o'))
+	if(state == 1 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o')) //CyV
 	{
 		state = 2;
 		charpos++;
@@ -68,7 +85,7 @@ bool consonants(string w, int& charpos)
 		state = 3;
 	}
   	if(state == 2 || state == 3) 
-		return true;  // end in a final state
+		return true;
    	else 
 		return false;
 }
@@ -114,7 +131,7 @@ bool zRoot(string w, int& charpos)
 		state = 1;
 		charpos++;
 	}
-	if(state == 1 && w[charpos] == 'n')
+	if(state == 1 && w[charpos] == 'n')	//-n
 	{
 		state = 2;
 		charpos++;
@@ -131,6 +148,16 @@ bool jRoot(string w, int& charpos)
 	charpos++;
 
 	if(state == 0 && w[charpos] == 'i')	//ji
+	{
+		state = 1;
+		charpos++;
+	}
+	if(state == 1 && w[charpos] == 'n')	//jin
+	{
+		state = 2;
+		charpos++;
+	}
+	if(state == 1 || state == 2)
 		return true;
 	else 
 		return false;
@@ -262,82 +289,123 @@ bool startstate(string w)	//also final state
 	int charpos = 0;
 	bool result = true;		//result of going through bools
 
-	while(w[charpos] != '\0')	//maybe switch statement
+	while(w[charpos] != '\0')
 	{
-		if(w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o')	//vowels
-			result = vowels(w, charpos);
-		else 
-		if(w[charpos] == 'k' || w[charpos] == 'n' || w[charpos] == 'h' || w[charpos] == 'm' || w[charpos] == 'r' || w[charpos] == 'g' || w[charpos] == 'b' || w[charpos] == 'p')
-			result = consonants(w, charpos);
-		else
-		if(w[charpos] == 's')
-			result = sRoot(w, charpos);
-		else
-		if(w[charpos] == 'z')
-			result = zRoot(w, charpos);
-		else
-		if(w[charpos] == 'j')
-			result = jRoot(w, charpos);
-		else
-		if(w[charpos] == 't')
-			result = tRoot(w, charpos);
-		else
-		if(w[charpos] == 'd')
-			result = dRoot(w, charpos);
-		else
-		if(w[charpos] == 'c')
-			result = cRoot(w, charpos);
-		else
-		if(w[charpos] == 'w')
-			result = wRoot(w, charpos);
-		else
-		if(w[charpos] == 'y')
-			result = yRoot(w, charpos);
-		else			//invalid character
-			return false;	
-
-		if(w[charpos] == 'I' || w[charpos] == 'E')
+		switch(w[charpos])
+		{
+			case 'a': case 'i': case 'u': case 'e': case 'o':
+				result = vowels(w, charpos);
+				break;
+			case 'k': case 'n': case 'h': case 'm': case 'r': case 'g': case 'b': case 'p':
+				result = consonants(w, charpos);
+				break;
+			case 's':
+				result = sRoot(w, charpos);
+				break;
+			case 'z':
+				result = zRoot(w, charpos);
+				break;
+			case 'j':
+				result = jRoot(w, charpos);
+				break;
+			case 't':
+				result = tRoot(w, charpos);
+				break;
+			case 'd':
+				result = dRoot(w, charpos);
+				break;
+			case 'c':
+				result = cRoot(w, charpos);
+				break;
+			case 'w':
+				result = wRoot(w, charpos);
+				break;
+			case 'y':
+				result = yRoot(w, charpos);
+				break;
+			default:		//invalid character
+				return false;
+		}
+		if(w[charpos] == 'E' || w[charpos] == 'I')	//WORD2 check
 			return true;
-
-		if(result == false)	//failed inside somewhere
+		if(result == false)				//failed in bools
 			return false;
 	}
 	return true;
 }
 
-/*******************************************************************/
+//Done by: Aaron & Erik
+bool dictionary(tokentype &a, string w)
+{	
+	string rWord;	//hold word
+	string rType;	//hold word type
 
-fstream toRead;  // ** stream is global
-fstream reservedwords;
+	//while reservedwords can read in
+	for(int i; i < arraySize; i++)
+	{
+		if(reservedwords[i] == w)
+		{
+			i++;	
+			//overload viable here?
+			if(reservedwords[i] == "VERB")
+				a = VERB;
+			else if(reservedwords[i] == "VERBNEG")
+				a = VERBNEG;
+			else if(reservedwords[i] == "VERBPAST")
+				a = VERBPAST;
+			else if(reservedwords[i] == "VERBPASTNEG")
+				a = VERBPASTNEG;
+			else if(reservedwords[i] == "IS")
+				a = IS;
+			else if(reservedwords[i] == "WAS")
+				a = WAS;
+			else if(reservedwords[i] == "OBJECT")
+				a = OBJECT;
+			else if(reservedwords[i] == "SUBJECT")
+				a = SUBJECT;
+			else if(reservedwords[i] == "DESTINATION")
+				a = DESTINATION;
+			else if(reservedwords[i] == "PRONOUN")
+				a = PRONOUN;
+			else if(reservedwords[i] == "CONNECTOR")
+				a = CONNECTOR;
+
+			return true;
+		}i++;
+	}
+	return false;
+}
 
 // Scanner processes only one word each time it is called
 // ** Done by: Aaron & Erik
 int scanner(tokentype& a, string& w)
 {
-  toRead >> w;  // ** must read from a file here
+  	toRead >> w;  //read word
 
 	bool result = true;	//default, word is assumed valid
-	int i = 0;
+	//int i = 0;
      	
-	if(w == "eofm")
+	if(w == "eofm")		//if end of file
 		return -1;	
-	else if(w == ".")
+	else if(w == ".")	//period calls period DFA
 	{
 		period(a);
 		return 1;
-	} 
-	result = startstate(w);
-	if(result == false)
+	}
+ 
+	result = startstate(w);		//enter DFA
+
+	if(result == false)	//result of DFA is false, word is invalid
 	{
 		a = ERROR;
 	}
-	else	//valid
+	else	//word is valid
 	{
-		if(isupper(w[w.size()-1]))	//word2
+		if(isupper(w[w.size()-1]))	//check last character in word for Uppercase
 		{
 			a = WORD2;
-		}
-		else
+		}	
+		else				//not uppercase so default WORD1, check against reservedwords.txt
 		{
 			a = WORD1;
 			result = dictionary(a, w);
@@ -345,76 +413,33 @@ int scanner(tokentype& a, string& w)
 	}
 }//the end
 
-//:w
-
-//Done by: Aaron & Erik
-bool dictionary(tokentype &a, string w)
-{	
-	string rWord;
-	string rType;
-
-	reservedwords.open("reservedwords.txt");
-
-	while(reservedwords >> rWord)
-	{
-		reservedwords >> rWord >> rType;
-
-		if(rWord == w)
-		{
-			if(rType == "VERB")
-				a = VERB;
-			else if(rType == "VERBNEG")
-				a = VERBNEG;
-			else if(rType == "VERBPAST")
-				a = VERBPAST;
-			else if(rType == "VERBPASTNEG")
-				a = VERBPASTNEG;
-			else if(rType == "IS")
-				a = IS;
-			else if(rType == "WAS")
-				a = WAS;
-			else if(rType == "OBJECT")
-				a = OBJECT;
-			else if(rType == "SUBJECT")
-				a = SUBJECT;
-			else if(rType == "DESTINATION")
-				a = DESTINATION;
-			else if(rType == "PRONOUN")
-				a = PRONOUN;
-			else if(rType == "CONNECTOR")
-				a = CONNECTOR;
-			
-			reservedwords.close();
-			return true;
-		}
-	}
-	reservedwords.close();
-	return false;
-}
-
-
 // The test driver to call the scanner repeatedly  
 // ** Done by:  Aaron & Erik
 int main()
 {
-	int eof = 1;
-  	tokentype thetype;
-  	string theword; 
-	
-	string inputfile;
+  	tokentype thetype;	//hole the type of the word being scanned
+  	string theword; 	//hold the word being scanned
+	int eof = 1;		//eof int
+
+	string inputfile;	//user input filename
 	printf("Please enter the name of file to be scanned: ");
 	getline(cin, inputfile);
 
-	toRead.open(inputfile.c_str());
-
-	while (true)  //** should not use the stream yet so I took it out
+	/*while(toRead.fail(inputfile.c_str()))	//input checking
 	{
+		printf("Error opening inputfile: %s \nEnding program...", inputfile);
+		return -1;
+	}*/
 
+	toRead.open(inputfile.c_str());	//open user input file
+
+	while (true)	//while eof has not been reached
+	{
 		eof = scanner(thetype, theword);  // call the scanner
 
 		if(eof == -1)
-			break;
-
+			return 0;
+	
 		//optimize this with operator overload
 		if(thetype == ERROR)	
                 {
@@ -449,7 +474,8 @@ int main()
 			cout << "Type is: " << "PRONOUN   ";
 		else if(thetype == CONNECTOR)
 			cout << "Type is: " << "CONNECTOR   ";
+
 		cout << "Word is: " << theword << endl << endl;   
     	}
-	toRead.close();
+	toRead.close();		//close user input file
 }// end
