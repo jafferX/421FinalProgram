@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <string>
-#include <stack>	//grammar stack
+#include <stack>	//grammar stack	//maybe make this vector
 #include <array>	//parsing table?
 using namespace std;
 
@@ -16,16 +16,17 @@ bool token_available = false;		//flag, default is unavailable
 fstream toParse;			//global stream to parse file
 
 //General functions
-void scanner();		//not sure where this comes into play yet
+string scanner();		//not sure where this comes into play yet
 void next_token();	//go to next token
 bool match(char);	//find and remove from text
 
-//Nonterminal functions, these are something else I think
+//Nonterminal functions, these are something else I think, probably change this
 void V();	//Vowel
 void C();	//Consonants, X on paper
 void R();	//Root
 
 //Stack functions
+stack <char> gStack;	//initialize grammar stack
 void fillStack();	//fills stack with parse characters
 
 //Syntax error functions
@@ -34,7 +35,6 @@ void syntax_default();		//when a switch statement goes to default
 
 int main()
 {
-	stack <char> gStack;	//initialize grammar stack
 	gStack.push('$');	//push terminating character onto stack
 
 	string PTable [3][3];	//parse table, default 3x3 to be changed as needed
