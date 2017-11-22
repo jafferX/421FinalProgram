@@ -22,9 +22,8 @@ using namespace std;
 
 
 //Global
-stack <char> gStack;	//initialize stack, maybe make this a vector for access
-string PTable [3][3];	//parse table, default 3x3 to be changed as needed
 token_type saved_token;			//buffer, default is empty
+string saved_lexeme;
 bool token_available = false;		//flag, default is unavailable
 fstream toParse;			//global stream to parse file
 
@@ -37,22 +36,22 @@ enum token_type{ //type creation
 //General functions
 string scanner();	//parser calls this repeatedly
 void next_token();	//go to next token
-bool match(char);	//find and remove from text
+bool match(token_type);	//find and remove from text
 
 //Nonterminal functions
-
-
-//Stack functions
-void fillStack();	//fills stack with parse characters
+void story();
+void s0();
+void s1();
+void s2();
+void s3();
+void noun();
+void verb();
+void be();
+void tense();
 
 //Syntax error functions
 void syntaxerror1(/*two args here*/);		//when match() function does not match
 void syntaxerror2(/*two args here*/);		//when a switch statement goes to default
-
-void fillStack()
-{
-
-}
 
 //Done by:
 void syntaxerror1()
@@ -92,11 +91,11 @@ bool match(char matchThis)
 		//syntax error messages
 		
 		//match fails	
-		syntax_mismatch();
+		syntaxerror1();
 		/*printf("Expected char %c...", matchThis);*/
 
 		//switch goes to default
-		syntax_default();
+		syntaxerror2();
 		/*printf("Major error detected. Ending parse...");*/
 	}
 	else //matched
