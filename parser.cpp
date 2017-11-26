@@ -4,7 +4,7 @@
 //Last updated: 2017/11/26
 //Compiled with g++
 //Written on vim, visual studio, github
-//Purpose:	Parse a file of romanji for proper spelling
+//Purpose: Parse a file of romanji for proper spelling
 // and sentence structure.
 //
 //	 MIT License
