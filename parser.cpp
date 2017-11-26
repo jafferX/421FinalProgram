@@ -39,38 +39,80 @@ void next_token();	//go to next token
 bool match(token_type);	//find and remove from text
 
 //Nonterminal functions
-void story();
-void s0();
-void s1();
-void s2();
-void s3();
-void noun();
-void verb();
-void be();
-void tense();
-
-//Syntax error functions
-void syntaxerror1(/*two args here*/);		//when match() function does not match
-void syntaxerror2(/*two args here*/);		//when a switch statement goes to default
-
-//Done by:
-void syntaxerror1()
+//Done by: ***
+void story()
 {
 
 }
 
-//Done by:
-void syntaxerror2()
+//Done by: ***
+void s0()
+{
+	
+}
+
+//Done by: ***
+void s1()
+{
+	
+}
+
+//Done by: ***
+void s2()
+{
+	
+}
+
+//Done by: ***
+void s3()
+{
+	
+}
+
+//Done by: ***
+void noun()
+{
+	
+}
+
+//Done by: ***
+void verb()
+{
+	
+}
+
+//Done by: ***
+void be()
+{
+	
+}
+
+//Done by: ***
+void tense()
+{
+	
+}
+
+//Syntax Errors
+//Done by: Paul
+void syntaxerror1()	//when match() function does not match
 {
 
 }
 
+//Done by: Paul
+void syntaxerror2()	//when a switch statement goes to default
+{
+
+}
+
+//Scanner functions
 string scanner(token_type& the_type, string& word)	//grabs next token
 {
 	//parser calls this repeatedly
 }
 
-//Done by: ***
+//Done by: Aaron
 token next_token()	//she has token here in her notes, part of enum I think
 {
 	if(!token_available)	//no saved token
@@ -81,20 +123,16 @@ token next_token()	//she has token here in her notes, part of enum I think
 	return saved_token;	//return found token
 }
 
-//Done by: ***
+//Done by: Aaron
 bool match(char matchThis)
 {
 	if(next_token() != matchThis)	//mismatch
 	{
 		//syntax error messages
-		
 		//match fails	
 		syntaxerror1();
-		/*printf("Expected char %c...", matchThis);*/
-
 		//switch goes to default
 		syntaxerror2();
-		/*printf("Major error detected. Ending parse...");*/
 	}
 	else //matched
 	{
@@ -103,7 +141,7 @@ bool match(char matchThis)
 	}
 }
 
-//Done by: ***
+//Done by: Aaron
 int main()
 {
 	//- opens the input file
