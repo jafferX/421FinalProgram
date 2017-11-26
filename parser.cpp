@@ -7,7 +7,7 @@
 //Purpose:	Parse a file of romanji for proper spelling
 // and sentence structure.
 //
-//				MIT License
+//	 MIT License
 /***************************************/
 
 #include <iostream>		//i/o
