@@ -73,11 +73,9 @@ string scanner(token_type& the_type, string& word)	//grabs next token
 //Done by: ***
 token next_token()	//she has token here in her notes, part of enum I think
 {
-	string lexeme;	//hold next word
-
 	if(!token_available)	//no saved token
 	{
-		scanner(saved_token, lexeme);	//finds next token
+		scanner(saved_token, saved_lexeme);	//finds next token
 		token_available = true;		//now has saved token
 	}
 	return saved_token;	//return found token
@@ -111,8 +109,6 @@ int main()
 	//- opens the input file
  	//- calls the <story> to start parsing
   	//- closes the input file 
-
-	gStack.push('$');	//push terminating character onto stack
 	
 	string uInput;
 	
@@ -126,7 +122,7 @@ int main()
 
 	toParse.open(uInput.c_str());		//open test file
 
-	//calls <story>
+	story();	//begin parse
 	
 	toParse.close();			//close file
 
