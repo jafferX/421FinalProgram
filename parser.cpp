@@ -148,21 +148,22 @@ int main()
  	//- calls the <story> to start parsing
   	//- closes the input file 
 	
-	string uInput;
+	string uInput;	//user input name of file to open
 	
 	printf("Please enter the name of the file you'd like to parse: ");
 	getline(cin, uInput);
 
-	if(toParse.fail())
-	{
-		//error opening file, end program
-	}
-
 	toParse.open(uInput.c_str());		//open test file
 
-	story();	//begin parse
+	if(!toParse.is_open())	//check if file opened
+	{
+		printf("Error opening file. Ending program...\n");
+		exit(EXIT_FAILURE);
+	}
 	
-	toParse.close();			//close file
+	story();		//begin parse
+	
+	toParse.close();	//close file
 
 	return 0;
 }
