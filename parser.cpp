@@ -77,7 +77,7 @@ token_type next_token()	//she has token here in her notes, part of enum I think
 }
 
 //Done by: Aaron
-bool match(char matchThis)
+bool match(string matchThis)
 {
 	if (next_token() != matchThis)	//mismatch
 	{
