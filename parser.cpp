@@ -1,15 +1,3 @@
-/*****************parser.cpp**************/
-//Author: Aaron Brunette, Paul Rowe, Erik Leung
-//Github: abrunette
-//Last updated: 2017/11/26
-//Compiled with g++
-//Written on vim, visual studio, github
-//Purpose: Parse a file of romanji for proper spelling
-// and sentence structure.
-//
-//	 MIT License
-/***************************************/
-
 #include <iostream>		//i/o
 #include <cstdio>		//printf, i/o
 #include <cstdlib>		//exit()
@@ -32,20 +20,20 @@ using namespace std;
 // ** Make each non-terminal into a function here
 // ** Be sure to put the corresponding grammar rule above each function
 
+//token vars
+enum token_type { //type creation
+	ERROR, WORD1, WORD2, PERIOD, 
+	VERB, VERBNEG, VERBPAST, VERBPASTNEG, 
+	IS, WAS, OBJECT, SUBJECT, DESTINATION, 
+	PRONOUN, CONNECTOR, EOFM
+};
 
 //Global
 token_type saved_token;			//buffer, default is empty
 string saved_lexeme;
 bool token_available = false;		//flag, default is unavailable
 fstream toParse;			//global stream to parse file
-int trace = 1;			//trace on by default
-
-//token vars
-enum token_type { //type creation
-	PERIOD, EOFM, VERB, VERBNEG, VERBPASTNEG,
-	IS, WAS, OBJECT, SUBJECT, DESTINATION,
-	PRONOUN, CONNECTOR
-};
+int trace = 1;				//trace on by default
 
 //reservedwords array initialization
 const int arraySize = 38;
@@ -59,9 +47,49 @@ string reservedwords[arraySize] = {
 	"dakara", "CONNECTOR", "eofm", "EOFM" };
 
 //General functions
-string scanner();	//parser calls this repeatedly
-void next_token();	//go to next token
+void scanner(token_type&, string&);	//parser calls this repeatedly
+token_type next_token();	//go to next token
 bool match(token_type);	//find and remove from text
+
+//Syntax Errors
+//Done by: Paul
+void syntaxerror1()	//when match() function does not match
+{
+	//mismatch
+}
+
+//Done by: Paul
+void syntaxerror2()	//when a switch statement goes to default
+{
+	printf("Switch default. Major error, ending program...");
+	exit(EXIT_FAILURE);
+}
+
+//Done by: Aaron
+token_type next_token()	//she has token here in her notes, part of enum I think
+{
+	if (!token_available)	//no saved token
+	{
+		scanner(saved_token, saved_lexeme);	//finds next token
+		token_available = true;		//now has saved token
+	}
+	return saved_token;	//return found token
+}
+
+//Done by: Aaron
+bool match(char matchThis)
+{
+	if (next_token() != matchThis)	//mismatch
+	{
+		syntaxerror1();
+		//fix error here somehow? continue parse as if the right one was called?
+	}
+	else //matched
+	{
+		token_available = false;	//remove token
+		return true;
+	}
+}
 
 //Nonterminal functions
 //Done by: ***
@@ -127,29 +155,14 @@ void tense()
 		printf("Processing <tense>\n\n");
 }
 
-//Syntax Errors
-//Done by: Paul
-void syntaxerror1()	//when match() function does not match
-{
-	//mismatch
-}
-
-//Done by: Paul
-void syntaxerror2()	//when a switch statement goes to default
-{
-	printf("Switch default. Major error, ending program...");
-	exit(EXIT_FAILURE);
-}
-
-
 /*****************************Scanner Functions**********************************/
 
 //word checker prototype
-bool dictionary(tokentype&, string);
+void dictionary(token_type&, string);
 
 // Period found, returns token
 // ** Done by: Aaron & Erik
-void period(tokentype& a)
+void period(token_type& a)
 {
 	a = PERIOD;	//sets token
 	return;
@@ -450,7 +463,7 @@ bool startstate(string w)	//also final state
 }
 
 //Done by: Aaron & Erik
-void dictionary(tokentype &a, string w)
+void dictionary(token_type &a, string w)
 {
 	string rWord;	//hold word
 	string rType;	//hold word type
@@ -492,7 +505,7 @@ void dictionary(tokentype &a, string w)
 
 // Scanner processes only one word each time it is called
 // ** Done by: Aaron & Erik
-void scanner(tokentype& a, string& w)
+void scanner(token_type& a, string& w)
 {
 	toParse >> w;  //read word
 
@@ -525,32 +538,6 @@ void scanner(tokentype& a, string& w)
 }//the end
 
 /*******************************************************************************/
-
-//Done by: Aaron
-token next_token()	//she has token here in her notes, part of enum I think
-{
-	if (!token_available)	//no saved token
-	{
-		scanner(saved_token, saved_lexeme);	//finds next token
-		token_available = true;		//now has saved token
-	}
-	return saved_token;	//return found token
-}
-
-//Done by: Aaron
-bool match(char matchThis)
-{
-	if (next_token() != matchThis)	//mismatch
-	{
-		syntaxerror1();
-		//fix error here somehow? continue parse as if the right one was called?
-	}
-	else //matched
-	{
-		token_available = false;	//remove token
-		return true;
-	}
-}
 
 //Done by: Aaron
 int main()
