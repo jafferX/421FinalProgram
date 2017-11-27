@@ -1,3 +1,15 @@
+/*****************parser.cpp**************/
+//Author: Aaron Brunette, Paul Rowe, Erik Leung
+//Github: abrunette
+//Last updated: 2017/11/26
+//Compiled with g++
+//Written on vim, visual studio, github
+//Purpose: Parse a file of romanji for proper spelling
+// and sentence structure.
+//
+//	 	MIT License
+/*****************************************/
+
 #include <iostream>		//i/o
 #include <cstdio>		//printf, i/o
 #include <cstdlib>		//exit()
@@ -33,6 +45,7 @@ token_type saved_token;			//buffer, default is empty
 string saved_lexeme;
 bool token_available = false;		//flag, default is unavailable
 fstream toParse;			//global stream to parse file
+fstream errors;				//global stream to collect error messages in file
 int trace = 1;				//trace on by default
 
 //reservedwords array initialization
@@ -56,12 +69,13 @@ bool match(token_type);	//find and remove from text
 void syntaxerror1()	//when match() function does not match
 {
 	//mismatch
+	errors << ;
 }
 
 //Done by: Paul
 void syntaxerror2()	//when a switch statement goes to default
 {
-	printf("Switch default. Major error, ending program...");
+	errors << ;
 	exit(EXIT_FAILURE);
 }
 
@@ -77,7 +91,7 @@ token_type next_token()	//she has token here in her notes, part of enum I think
 }
 
 //Done by: Aaron
-bool match(string matchThis)
+bool match(token_type matchThis)
 {
 	if (next_token() != matchThis)	//mismatch
 	{
@@ -552,6 +566,7 @@ int main()
 	getline(cin, uInput);
 
 	toParse.open(uInput.c_str());		//open test file
+	errors.open("errors.txt");
 
 	if (!toParse.is_open())	//check if file opened
 	{
@@ -564,6 +579,7 @@ int main()
 
 	story();		//begin parse
 
+	errors.close();
 	toParse.close();	//close file
 
 	return 0;
