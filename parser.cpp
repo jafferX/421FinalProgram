@@ -1,7 +1,7 @@
 /*****************parser.cpp**************/
 //Author: Aaron Brunette, Paul Rowe, Erik Leung
 //Github: abrunette
-//Last updated: 2017/11/26
+//Last updated: 2017/11/27
 //Compiled with g++
 //Written on vim, visual studio, github
 //Purpose: Parse a file of romanji for proper spelling
@@ -15,7 +15,7 @@
 #include <cstdlib>		//exit()
 #include <fstream>		//fstream
 #include <string>		//string
-#include <unordered_map>	//grammar table
+//#include <unordered_map>	//grammar table
 using namespace std;
 
 //=================================================
@@ -48,6 +48,9 @@ fstream toParse;			//global stream to parse file
 fstream errors;				//global stream to collect error messages in file
 int trace = 1;				//trace on by default
 
+//transistion table for grammer
+//typedef unordered_map<token_type, token_type> grammarMap;
+
 //reservedwords array initialization
 const int arraySize = 38;
 string reservedwords[arraySize] = {
@@ -59,6 +62,17 @@ string reservedwords[arraySize] = {
 	"soshite", "CONNECTOR", "shikashi", "CONNECTOR",
 	"dakara", "CONNECTOR", "eofm", "EOFM" };
 
+//parser function prototypes
+void story();
+void s0();
+void s1();
+void s2();
+void s3();
+void noun();
+void verb();
+void be();
+void tense();
+
 //General functions
 void scanner(token_type&, string&);	//parser calls this repeatedly
 token_type next_token();	//go to next token
@@ -66,16 +80,50 @@ bool match(token_type);	//find and remove from text
 
 //Syntax Errors
 //Done by: Paul
-void syntaxerror1()	//when match() function does not match
+void syntaxerror1(token_type thetype)	//when match() function does not match
 {
 	//mismatch
-	errors << ;
+	string expected;
+		if(thetype == WORD1)
+			expected = "WORD1";
+		else if(thetype == WORD2)
+			expected = "WORD2";
+	       	else if(thetype == PERIOD)
+			expected = "PERIOD";
+		else if(thetype == VERB)
+			expected = "VERB";
+		else if(thetype == VERBPAST)
+			expected = "VERPAST";
+		else if(thetype == VERBNEG)
+			expected = "VERBNEG";
+		else if(thetype == VERBPASTNEG)
+			expected = "VERBPASTNEG";
+		else if(thetype == IS)
+			expected = "IS";
+		else if(thetype == WAS)
+			expected = "WAS";
+		else if(thetype == OBJECT)
+			expected = "OBJECT";
+		else if(thetype == SUBJECT)
+			expected = "SUBJECT";
+		else if(thetype == DESTINATION)
+			expected = "DESTINATION";
+		else if(thetype == PRONOUN)
+			expected = "PRONOUN";
+		else if(thetype == CONNECTOR)
+			expected = "CONNECTOR";
+
+
+	cout << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
+	errors << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
+	exit(EXIT_FAILURE);
 }
 
 //Done by: Paul
-void syntaxerror2()	//when a switch statement goes to default
+void syntaxerror2(string pFunction)	//when a switch statement goes to default
 {
-	errors << ;
+	cout << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
+	errors << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
 	exit(EXIT_FAILURE);
 }
 
@@ -91,82 +139,242 @@ token_type next_token()	//she has token here in her notes, part of enum I think
 }
 
 //Done by: Aaron
-bool match(token_type matchThis)
+bool match(token_type thetype)
 {
-	if (next_token() != matchThis)	//mismatch
+	if (next_token() != thetype)	//mismatch
 	{
-		syntaxerror1();
-		//fix error here somehow? continue parse as if the right one was called?
+		syntaxerror1(thetype);
 	}
 	else //matched
 	{
+		if(thetype == WORD1)
+			cout << "Matched " << "WORD1\n";
+		else if(thetype == WORD2)
+			cout << "Matched " << "WORD2\n";
+	       	else if(thetype == PERIOD)
+			cout << "Matched " << "PERIOD\n";
+		else if(thetype == VERB)
+			cout << "Matched " << "VERB\n";
+		else if(thetype == VERBPAST)
+			cout << "Matched " << "VERPAST\n";
+		else if(thetype == VERBNEG)
+			cout << "Matched " << "VERBNEG\n";
+		else if(thetype == VERBPASTNEG)
+			cout << "Matched  " << "VERBPASTNEG\n";
+		else if(thetype == IS)
+			cout << "Matched  " << "IS\n";
+		else if(thetype == WAS)
+			cout << "Matched  " << "WAS\n";
+		else if(thetype == OBJECT)
+			cout << "Matched  " << "OBJECT\n";
+		else if(thetype == SUBJECT)
+			cout << "Matched  " << "SUBJECT\n";
+		else if(thetype == DESTINATION)
+			cout << "Matched  " << "DESTINATION\n";
+		else if(thetype == PRONOUN)
+			cout << "Matched  " << "PRONOUN\n";
+		else if(thetype == CONNECTOR)
+			cout << "Matched  " << "CONNECTOR\n";
+	
 		token_available = false;	//remove token
 		return true;
 	}
 }
 
-//Nonterminal functions
-//Done by: ***
+//Done by: Erik Leung
 void story()
 {
 	if (trace != 0)
-		printf("Processing <story>\n\n");
+		printf("Processing <story>\n");
+
+		s0();
+		while (next_token() != EOFM)
+		{
+			s0();
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void s0()
 {
 	if (trace != 0)
-		printf("Processing <s0>\n\n");
+		printf("\n====== Processing <s> ======\n");
+
+		if (next_token() == CONNECTOR)
+		{
+			match(CONNECTOR);
+		}
+		switch(next_token())
+		{
+			case WORD1: case PRONOUN:
+				noun();
+				match(SUBJECT);
+				s1();
+				break;
+			default:
+				syntaxerror2("s0");
+				return;
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void s1()
 {
 	if (trace != 0)
-		printf("Processing <s1>\n\n");
+		printf("Processing <s1>\n");
+
+		switch(next_token())
+		{
+			case WORD2:
+			 	verb();
+				tense();
+				match(PERIOD);
+				break;
+			case WORD1: case PRONOUN:
+				noun();
+				s2();
+				break;
+			default:
+				syntaxerror2("s1");
+				return;
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void s2()
 {
 	if (trace != 0)
-		printf("Processing <s2>\n\n");
+		printf("Processing <s2>\n");
+
+		switch(next_token())
+		{
+			case IS: case WAS:
+				be();
+				match(PERIOD);
+				break;
+			case DESTINATION:
+				match(DESTINATION);
+				verb();
+				tense();
+				match(PERIOD);
+				break;
+			case OBJECT:
+				match(OBJECT);
+				s3();
+				break;
+			default:
+				syntaxerror2("s2");
+				return;
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void s3()
 {
 	if (trace != 0)
-		printf("Processing <s3>\n\n");
+		printf("Processing <s3>\n");
+
+		switch(next_token())
+		{
+			case WORD2:
+				verb();
+				tense();
+				match(PERIOD);
+				break;
+			case WORD1: case PRONOUN:
+				noun();
+				match(DESTINATION);
+				verb();
+				tense();
+				match(PERIOD);
+				break;
+			default:
+				syntaxerror2("s3");
+				return;
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void noun()
 {
 	if (trace != 0)
-		printf("Processing <noun>\n\n");
+		printf("Processing <noun>\n");
+
+		switch(next_token())
+		{
+			case WORD1:
+				match(WORD1);
+				break;
+			case PRONOUN:
+				match(PRONOUN);
+				break;
+			default:
+				syntaxerror2("noun");
+				return;
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void verb()
 {
 	if (trace != 0)
-		printf("Processing <verb>\n\n");
+		printf("Processing <verb>\n");
+
+		switch(next_token())
+		{
+			case WORD2:
+				match(WORD2);
+				break;
+			default:
+				syntaxerror2("verb");
+				return;
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void be()
 {
 	if (trace != 0)
-		printf("Processing <be>\n\n");
+		printf("Processing <be>\n");
+
+		switch(next_token())
+		{
+			case IS:
+				match(IS);
+				break;
+			case WAS:
+				match(WAS);
+				break;
+			default:
+				syntaxerror2("be");
+				return;
+		}
 }
 
-//Done by: ***
+//Done by: Erik Leung
 void tense()
 {
 	if (trace != 0)
-		printf("Processing <tense>\n\n");
+		printf("Processing <tense>\n");
+
+		switch(next_token())
+		{
+			case VERBPAST:
+				match(VERBPAST);
+				break;
+			case VERB:
+				match(VERB);
+				break;
+			case VERBPASTNEG:
+				match(VERBPASTNEG);
+				break;
+			case VERBNEG:
+				match(VERBNEG);
+				break;
+			default:
+				syntaxerror2("tense");
+				return;
+		}
 }
 
 /*****************************Scanner Functions**********************************/
@@ -186,8 +394,6 @@ void period(token_type& a)
 //check vowels
 bool vowels(string w, int& charpos)
 {
-	int state = 0;
-
 	if (w[charpos + 1] == 'n')	//Vn
 	{
 		charpos++; charpos++;
@@ -479,11 +685,8 @@ bool startstate(string w)	//also final state
 //Done by: Aaron & Erik
 void dictionary(token_type &a, string w)
 {
-	string rWord;	//hold word
-	string rType;	//hold word type
-
 	//while reservedwords can read in
-	for (int i; i < arraySize; i++)
+	for (int i = 0; i < arraySize; i++)
 	{
 		if (reservedwords[i] == w)
 		{
@@ -510,7 +713,6 @@ void dictionary(token_type &a, string w)
 				a = PRONOUN;
 			else if (reservedwords[i] == "CONNECTOR")
 				a = CONNECTOR;
-
 			return;
 		}i++;
 	}
@@ -521,6 +723,7 @@ void dictionary(token_type &a, string w)
 // ** Done by: Aaron & Erik
 void scanner(token_type& a, string& w)
 {
+	printf("Scanner was called...\n");
 	toParse >> w;  //read word
 
 	bool result = true;	//default, word is assumed valid
@@ -541,6 +744,7 @@ void scanner(token_type& a, string& w)
 
 	if (result == false)	//result of DFA is false, word is invalid
 	{
+		printf("word is invalid\n");
 		a = ERROR;
 	}
 	else	//word is valid
@@ -572,7 +776,7 @@ int main()
 	getline(cin, uInput);
 
 	toParse.open(uInput.c_str());		//open test file
-	errors.open("errors.txt");
+	errors.open("errors.txt", fstream::out);
 
 	if (!toParse.is_open())	//check if file opened
 	{
