@@ -525,6 +525,12 @@ void scanner(token_type& a, string& w)
 
 	bool result = true;	//default, word is assumed valid
 
+	if(w == "eofm")	//eof found
+	{
+		a = EOFM;
+		return;
+	}
+
 	if (w == ".")	//period calls period DFA
 	{
 		period(a);
