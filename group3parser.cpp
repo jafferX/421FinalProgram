@@ -1,7 +1,7 @@
 /*****************parser.cpp**************/
 //Author: Aaron Brunette, Paul Rowe, Erik Leung
 //Github: abrunette
-//Last updated: 2017/11/27
+//Last updated: 2017/11/29
 //Compiled with g++
 //Written on vim, visual studio, github
 //Purpose: Parse a file of romanji for proper spelling
@@ -40,6 +40,14 @@ enum token_type { //type creation
 	PRONOUN, CONNECTOR, EOFM
 };
 
+//enum to string, string to enum
+string conversion[16] = {
+"ERROR", "WORD1", "WORD2", "PERIOD", 
+"VERB", "VERBNEG", "VERBPAST", "VERBPASTNEG", 
+"IS", "WAS", "OBJECT", "SUBJECT", "DESTINATION", 
+"PRONOUN", "CONNECTOR", "EOFM"
+};
+
 //Global
 token_type saved_token;			//buffer, default is empty
 string saved_lexeme;
@@ -49,7 +57,7 @@ fstream errors;				//global stream to collect error messages in file
 int trace = 1;				//trace on by default
 
 //transistion table for grammer
-//typedef unordered_map<token_type, token_type> grammarMap;
+typedef unordered_map<token_type, token_type> grammarMap;
 
 //reservedwords array initialization
 const int arraySize = 38;
