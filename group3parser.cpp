@@ -755,7 +755,7 @@ void scanner(token_type& a, string& w)
 
 	if (result == false)	//result of DFA is false, word is invalid
 	{
-		printf("word is invalid\n");
+		cout << "Lexical error: " << saved_lexeme << " is not a valid token" << endl;
 		a = ERROR;
 	}
 	else	//word is valid
@@ -769,7 +769,7 @@ void scanner(token_type& a, string& w)
 			a = WORD1;
 			dictionary(a, w);
 		}
-	}
+	}	
 }//the end
 
 /*******************************************************************************/
