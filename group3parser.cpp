@@ -53,7 +53,12 @@ bool token_available = false;		//flag, default is unavailable
 fstream toParse;			//global stream to parse file
 fstream errors;				//global stream to collect error messages in file
 
-int trace = 1;				//trace on by default
+//extra feature variables
+char sTrace = 'n';			//scanner trace off by default
+char pTrace = 'n';			//parser trace off by default
+char wantMatch = 'n';			//display matches if parser trace is off
+char errorCorr = 'n';			//error correction off by default
+char errorOutput = 'n';			//error output off by default
 
 //transistion table for grammer
 //typedef unordered_map<token_type, token_type> grammarMap;
@@ -83,6 +88,7 @@ void tense();
 //General function prototypes
 token_type next_token();	//go to next token
 bool match(token_type);		//find and remove from text
+void checking();		//ask user if they want extra features
 
 //Syntax error function prototypes
 void syntaxerror1(token_type);		//mismatch, error checking
@@ -115,24 +121,29 @@ int main()
 
 	string uInput;	//user input name of file to open
 
-	printf("Please enter the name of the file you'd like to parse: ");
+	printf("Input file name: ");
 	getline(cin, uInput);
 
-	toParse.open(uInput.c_str());		//open test file
-	errors.open("errors.txt", fstream::out);
+	checking();
+
+	toParse.open(uInput.c_str());		//open test file	
 
 	if (!toParse.is_open())	//check if file opened
 	{
 		printf("Error opening file. Ending program...\n");
 		exit(EXIT_FAILURE);
-	}
+	}	
 
-	printf("Would you like the parse to be traced?\nEnter 0 to turn off trace: ");
-	cin >> trace;	//option to turn trace off
+	if(errorOutput == 'y')
+		errors.open("errors.txt", fstream::out);
 
 	story();		//begin parse
 
-	errors.close();
+	printf("\nSuccessfully parsed <story>\n");
+
+	if(errors.is_open())
+		errors.close();
+
 	toParse.close();	//close file
 
 	return 0;
@@ -143,20 +154,20 @@ int main()
 //Done by: Erik Leung
 void story()
 {
-	if (trace != 0)
+	if (pTrace == 'y')
 		printf("Processing <story>\n");
 
+	sentence();
+	while (next_token() != EOFM)
+	{
 		sentence();
-		while (next_token() != EOFM)
-		{
-			sentence();
-		}
+	}
 }
 
 //Done by: Erik Leung
 void sentence()
 {
-	if (trace != 0)
+	if (pTrace == 'y')
 		printf("\n====== Processing <s> ======\n");
 
 	if (next_token() == CONNECTOR)
@@ -171,7 +182,7 @@ void sentence()
 			statement1();
 			break;
 		default:
-			syntaxerror2("sentence");
+			syntaxerror2("<s>");
 			return;
 	}
 }
@@ -179,8 +190,8 @@ void sentence()
 //Done by: Erik Leung
 void statement1()
 {
-	if (trace != 0)
-		printf("Processing <s1>\n");
+	if(pTrace == 'y')
+		printf("Processing <afterSubject>\n");
 
 	switch(next_token())
 	{
@@ -190,11 +201,11 @@ void statement1()
 			match(PERIOD);
 			break;
 		case WORD1: case PRONOUN:
-			noun();
+			noun();	
 			statement2();
 			break;
 		default:
-			syntaxerror2("s1");
+			syntaxerror2("<afterSubject>");
 			return;
 	}
 }
@@ -202,8 +213,8 @@ void statement1()
 //Done by: Erik Leung
 void statement2()
 {
-	if (trace != 0)
-		printf("Processing <s2>\n");
+	if(pTrace == 'y')
+		printf("Processing <afterNoun>\n");
 
 	switch(next_token())
 	{
@@ -222,7 +233,7 @@ void statement2()
 			statement3();
 			break;
 		default:
-			syntaxerror2("s2");
+			syntaxerror2("<afterNoun>");
 			return;
 	}
 }
@@ -230,8 +241,8 @@ void statement2()
 //Done by: Erik Leung
 void statement3()
 {
-	if (trace != 0)
-		printf("Processing <s3>\n");
+	if (pTrace == 'y')
+		printf("Processing <afterObject>\n");
 
 	switch(next_token())
 	{
@@ -248,7 +259,7 @@ void statement3()
 			match(PERIOD);
 			break;
 		default:
-			syntaxerror2("s3");
+			syntaxerror2("<afterObject>");
 			return;
 	}
 }
@@ -256,84 +267,84 @@ void statement3()
 //Done by: Erik Leung
 void noun()
 {
-	if (trace != 0)
+	if (pTrace == 'y')
 		printf("Processing <noun>\n");
 
-		switch(next_token())
-		{
-			case WORD1:
-				match(WORD1);
-				break;
-			case PRONOUN:
-				match(PRONOUN);
-				break;
-			default:
-				syntaxerror2("noun");
-				return;
-		}
+	switch(next_token())
+	{
+		case WORD1:
+			match(WORD1);
+			break;
+		case PRONOUN:
+			match(PRONOUN);
+			break;
+		default:
+			syntaxerror2("<noun>");
+			return;
+	}
 }
 
 //Done by: Erik Leung
 void verb()
 {
-	if (trace != 0)
+	if (pTrace == 'y')
 		printf("Processing <verb>\n");
 
-		switch(next_token())
-		{
-			case WORD2:
-				match(WORD2);
-				break;
-			default:
-				syntaxerror2("verb");
-				return;
-		}
+	switch(next_token())
+	{
+		case WORD2:
+			match(WORD2);
+			break;
+		default:
+			syntaxerror2("<verb>");
+			return;
+	}
 }
 
 //Done by: Erik Leung
 void be()
 {
-	if (trace != 0)
+	if (pTrace == 'y')
 		printf("Processing <be>\n");
 
-		switch(next_token())
-		{
-			case IS:
-				match(IS);
-				break;
-			case WAS:
-				match(WAS);
-				break;
-			default:
-				syntaxerror2("be");
-				return;
-		}
+	switch(next_token())
+	{
+		case IS:
+			match(IS);
+			break;
+		case WAS:
+			match(WAS);
+			break;
+		default:
+			syntaxerror2("<be>");
+			return;
+	}
 }
 
 //Done by: Erik Leung
 void tense()
 {
-	if (trace != 0)
+	if (pTrace == 'y')
 		printf("Processing <tense>\n");
 
-		switch(next_token())
-		{
-			case VERBPAST:
-				match(VERBPAST);
-				break;
-			case VERB:
-				match(VERB);
-				break;
-			case VERBPASTNEG:
-				match(VERBPASTNEG);
-				break;
-			case VERBNEG:
-				match(VERBNEG);
-				break;
-			default:
-				syntaxerror2("tense");
-				return;
-		}
+	switch(next_token())
+	{
+		case VERBPAST:
+			match(VERBPAST);
+			break;
+		case VERB:
+			match(VERB);
+			break;
+		case VERBPASTNEG:
+			match(VERBPASTNEG);
+			break;
+		case VERBNEG:
+			match(VERBNEG);
+			break;
+		default:
+			syntaxerror2("<tense>");
+			return;
+	}
 }
 
 //Done by: Aaron
@@ -348,7 +359,8 @@ bool match(token_type thetype)
 		}
 		else //matched
 		{
-			cout << "Matched " << conversion[thetype-1] << endl;
+			if(wantMatch == 'y')
+				cout << "Matched " << conversion[thetype-1] << endl;
 
 			token_available = false;	//remove token
 			return true;
@@ -366,26 +378,43 @@ token_type next_token()
 	return saved_token;	//return saved token
 }
 
+//Done by: Aaron
+void checking()
+{
+	printf("Do you want scanner trace (y/n)? ");
+	cin >> sTrace;
+
+	printf("Do you want parser trace (y/n)? ");
+	cin >> pTrace;
+
+	if(pTrace != 'y')
+	{
+		printf("Do you want to show matches (y/n)? ");
+		cin >> wantMatch;
+	}
+
+	printf("Do you want syntax error correction (y/n)? ");
+	cin >> errorCorr;
+
+	printf("Do you want error messages in error.txt (y/n)? ");
+	cin >> errorOutput;
+}
+
 //Syntax Errors
 //Done by: Paul
 void syntaxerror1(token_type thetype)	//when match() function does not match
 {
-	//mismatch
-	string expected;	//expected type
-	int choice = 0;
-
-	expected = conversion[thetype-1];	//convert enum type to string for output
-	
 	//output to screen and error.txt file
-	cout << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
-	errors << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
-
-	//Option to change the type to the expected type and continue parsing file
-	printf("If you'd like to change the type to the expected type and continue parsing, enter 1: ");
-	cin >> choice;
-
-	if (choice == 1)
-		saved_token = thetype;	//change and continue
+	cout << "SYNTAX ERROR: expected " << conversion[thetype-1] << " but found " << saved_lexeme << endl;
+	
+	if(errors.is_open())
+		errors << "SYNTAX ERROR: expected " << conversion[thetype-1] << " but found " << saved_lexeme << endl;
+	
+	if (false)	//error checking WIP, never goes here
+	{
+		cout << "Instead of "<< saved_lexeme << " try with: ";
+		cin >> saved_lexeme;
+	}
 	else
 		exit(EXIT_FAILURE);	//end program
 }
@@ -395,7 +424,10 @@ void syntaxerror2(string pFunction)	//when a switch statement goes to default
 {
 	//output to screen and error.txt file
 	cout << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
-	errors << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
+
+	if(errors.is_open())
+		errors << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
+
 	exit(EXIT_FAILURE);	//always ends program
 }
 
@@ -411,7 +443,9 @@ void scanner(token_type& a, string& w)
 {
 	bool result = true;	//default, word is assumed valid
 
-	printf("Scanner was called...\n");
+	if(sTrace == 'y')
+		cout << "Scanner called using word: " << w << endl;
+
 	toParse >> w;  //read word
 	
 	if(w == "eofm")	//eof found
@@ -445,7 +479,9 @@ void scanner(token_type& a, string& w)
 			a = WORD1;	//default WORD1, check if reserved
 			dictionary(a, w);
 		}
-	}	
+	}
+	if(sTrace == 'y')
+		cout << "Scanner saving token as: " << conversion[a-1] << endl;	
 }
 
 //Done by: Aaron & Erik
@@ -486,6 +522,8 @@ bool startstate(string w)	//also final state
 {
 	int charpos = 0;
 	bool result = true;		//result of going through bools
+
+	cout << "Try word: ";
 
 	while (w[charpos] != '\0')
 	{
