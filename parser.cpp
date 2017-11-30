@@ -1,6 +1,6 @@
 /*****************parser.cpp**************/
 //Authors: Aaron Brunette, Paul Rowe, Erik Leung
-//Last updated: 2017/11/29
+//Last updated: 2017/11/30
 //Compiled with g++
 //Written on vim, visual studio, github
 //Purpose: Parse a file of romanji for proper spelling
