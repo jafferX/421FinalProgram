@@ -1,6 +1,5 @@
 /*****************parser.cpp**************/
-//Author: Aaron Brunette, Paul Rowe, Erik Leung
-//Github: abrunette
+//Authors: Aaron Brunette, Paul Rowe, Erik Leung
 //Last updated: 2017/11/29
 //Compiled with g++
 //Written on vim, visual studio, github
@@ -37,168 +36,109 @@ enum token_type { //type creation
 	ERROR, WORD1, WORD2, PERIOD, 
 	VERB, VERBNEG, VERBPAST, VERBPASTNEG, 
 	IS, WAS, OBJECT, SUBJECT, DESTINATION, 
-	PRONOUN, CONNECTOR, EOFM
-};
+	PRONOUN, CONNECTOR, EOFM };
 
-//enum to string, string to enum
+//enum to string
 string conversion[16] = {
 "ERROR", "WORD1", "WORD2", "PERIOD", 
 "VERB", "VERBNEG", "VERBPAST", "VERBPASTNEG", 
 "IS", "WAS", "OBJECT", "SUBJECT", "DESTINATION", 
-"PRONOUN", "CONNECTOR", "EOFM"
-};
+"PRONOUN", "CONNECTOR", "EOFM" };
 
-//Global
-token_type saved_token;			//buffer, default is empty
-string saved_lexeme;
+//Global variables
+token_type saved_token;			//next token from scanner, default is empty
+string saved_lexeme;			//next word from scanner, default empty
 bool token_available = false;		//flag, default is unavailable
+
 fstream toParse;			//global stream to parse file
 fstream errors;				//global stream to collect error messages in file
+
 int trace = 1;				//trace on by default
 
 //transistion table for grammer
-typedef unordered_map<token_type, token_type> grammarMap;
+//typedef unordered_map<token_type, token_type> grammarMap;
 
 //reservedwords array initialization
 const int arraySize = 38;
 string reservedwords[arraySize] = {
-	"masu", "VERB", "masen", "VERBNEG", "mashita", "VERBPAST",
-	"masendeshita", "VERBPASTNEG", "desu", "IS", "deshita", "WAS",
-	"o", "OBJECT", "wa", "SUBJECT", "ni", "DESTINATION",
-	"watashi", "PRONOUN", "anata", "PRONOUN", "kare", "PRONOUN",
-	"kanojo", "PRONOUN", "sore", "PRONOUN", "mata", "CONNECTOR",
-	"soshite", "CONNECTOR", "shikashi", "CONNECTOR",
-	"dakara", "CONNECTOR", "eofm", "EOFM" };
+"masu", "VERB", "masen", "VERBNEG", "mashita", "VERBPAST",
+"masendeshita", "VERBPASTNEG", "desu", "IS", "deshita", "WAS",
+"o", "OBJECT", "wa", "SUBJECT", "ni", "DESTINATION",
+"watashi", "PRONOUN", "anata", "PRONOUN", "kare", "PRONOUN",
+"kanojo", "PRONOUN", "sore", "PRONOUN", "mata", "CONNECTOR",
+"soshite", "CONNECTOR", "shikashi", "CONNECTOR",
+"dakara", "CONNECTOR", "eofm", "EOFM" };
 
 //parser function prototypes
 void story();
-void s0();
-void s1();
-void s2();
-void s3();
+void sentence();
+void statement1();
+void statement2();
+void statement3();
 void noun();
 void verb();
 void be();
 void tense();
 
-//General functions
-void scanner(token_type&, string&);	//parser calls this repeatedly
+//General function prototypes
 token_type next_token();	//go to next token
-bool match(token_type);	//find and remove from text
+bool match(token_type);		//find and remove from text
 
-//Syntax Errors
-//Done by: Paul
-void syntaxerror1(token_type thetype)	//when match() function does not match
-{
-	//mismatch
-	string expected;
-	int choice = 0;
+//Syntax error function prototypes
+void syntaxerror1(token_type);		//mismatch, error checking
+void syntaxerror2(string);		//switch default
 
-		if(thetype == WORD1)
-			expected = "WORD1";
-		else if(thetype == WORD2)
-			expected = "WORD2";
-	       	else if(thetype == PERIOD)
-			expected = "PERIOD";
-		else if(thetype == VERB)
-			expected = "VERB";
-		else if(thetype == VERBPAST)
-			expected = "VERPAST";
-		else if(thetype == VERBNEG)
-			expected = "VERBNEG";
-		else if(thetype == VERBPASTNEG)
-			expected = "VERBPASTNEG";
-		else if(thetype == IS)
-			expected = "IS";
-		else if(thetype == WAS)
-			expected = "WAS";
-		else if(thetype == OBJECT)
-			expected = "OBJECT";
-		else if(thetype == SUBJECT)
-			expected = "SUBJECT";
-		else if(thetype == DESTINATION)
-			expected = "DESTINATION";
-		else if(thetype == PRONOUN)
-			expected = "PRONOUN";
-		else if(thetype == CONNECTOR)
-			expected = "CONNECTOR";
+//Scanner function prototypes
+void period(token_type&);		//sets period type
+void dictionary(token_type&, string);	//checks words against reservedwords array
 
-
-	cout << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
-	errors << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
-
-	printf("If you'd like to change the type to the expected type and continue parsing, enter 1: ");
-	cin >> choice;
-
-	if (choice == 1)
-		saved_token = thetype;
-	else
-		exit(EXIT_FAILURE);
-}
-
-//Done by: Paul
-void syntaxerror2(string pFunction)	//when a switch statement goes to default
-{
-	cout << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
-	errors << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
-	exit(EXIT_FAILURE);
-}
+//Scanner bool prototypes
+void scanner(token_type&, string&);	//parser calls this repeatedly
+bool startstate(string);
+bool vowels(string, int&);
+bool consonants(string, int&);
+bool sRoot(string, int&);
+bool zRoot(string, int&);
+bool jRoot(string, int&);
+bool tRoot(string, int&);
+bool dRoot(string, int&);
+bool cRoot(string, int&);
+bool wRoot(string, int&);
+bool yRoot(string, int&);
 
 //Done by: Aaron
-token_type next_token()	//she has token here in her notes, part of enum I think
+int main()
 {
-	if (!token_available)	//no saved token
+	//- opens the input file
+	//- calls the <story> to start parsing
+	//- closes the input file 
+
+	string uInput;	//user input name of file to open
+
+	printf("Please enter the name of the file you'd like to parse: ");
+	getline(cin, uInput);
+
+	toParse.open(uInput.c_str());		//open test file
+	errors.open("errors.txt", fstream::out);
+
+	if (!toParse.is_open())	//check if file opened
 	{
-		scanner(saved_token, saved_lexeme);	//finds next token
-		token_available = true;		//now has saved token
+		printf("Error opening file. Ending program...\n");
+		exit(EXIT_FAILURE);
 	}
-	return saved_token;	//return found token
+
+	printf("Would you like the parse to be traced?\nEnter 0 to turn off trace: ");
+	cin >> trace;	//option to turn trace off
+
+	story();		//begin parse
+
+	errors.close();
+	toParse.close();	//close file
+
+	return 0;
 }
 
-//Done by: Aaron
-bool match(token_type thetype)
-{
-		if (next_token() != thetype)	//mismatch
-		{
-			syntaxerror1(thetype);
-			token_available = false;
-			return true;
-		}
-		else //matched
-		{
-			if(thetype == WORD1)
-				cout << "Matched " << "WORD1\n";
-			else if(thetype == WORD2)
-				cout << "Matched " << "WORD2\n";
-			else if(thetype == PERIOD)
-				cout << "Matched " << "PERIOD\n";
-			else if(thetype == VERB)
-				cout << "Matched " << "VERB\n";
-			else if(thetype == VERBPAST)
-				cout << "Matched " << "VERPAST\n";
-			else if(thetype == VERBNEG)
-				cout << "Matched " << "VERBNEG\n";
-			else if(thetype == VERBPASTNEG)
-				cout << "Matched  " << "VERBPASTNEG\n";
-			else if(thetype == IS)
-				cout << "Matched  " << "IS\n";
-			else if(thetype == WAS)
-				cout << "Matched  " << "WAS\n";
-			else if(thetype == OBJECT)
-				cout << "Matched  " << "OBJECT\n";
-			else if(thetype == SUBJECT)
-				cout << "Matched  " << "SUBJECT\n";
-			else if(thetype == DESTINATION)
-				cout << "Matched  " << "DESTINATION\n";
-			else if(thetype == PRONOUN)
-				cout << "Matched  " << "PRONOUN\n";
-			else if(thetype == CONNECTOR)
-				cout << "Matched  " << "CONNECTOR\n";
-	
-			token_available = false;	//remove token
-			return true;
-		}
-}
+/*********************Parser Functions************************/
 
 //Done by: Erik Leung
 void story()
@@ -206,111 +146,111 @@ void story()
 	if (trace != 0)
 		printf("Processing <story>\n");
 
-		s0();
+		sentence();
 		while (next_token() != EOFM)
 		{
-			s0();
+			sentence();
 		}
 }
 
 //Done by: Erik Leung
-void s0()
+void sentence()
 {
 	if (trace != 0)
 		printf("\n====== Processing <s> ======\n");
 
-		if (next_token() == CONNECTOR)
-		{
-			match(CONNECTOR);
-		}
-		switch(next_token())
-		{
-			case WORD1: case PRONOUN:
-				noun();
-				match(SUBJECT);
-				s1();
-				break;
-			default:
-				syntaxerror2("s0");
-				return;
-		}
+	if (next_token() == CONNECTOR)
+	{
+		match(CONNECTOR);
+	}
+	switch(next_token())
+	{
+		case WORD1: case PRONOUN:
+			noun();
+			match(SUBJECT);
+			statement1();
+			break;
+		default:
+			syntaxerror2("sentence");
+			return;
+	}
 }
 
 //Done by: Erik Leung
-void s1()
+void statement1()
 {
 	if (trace != 0)
 		printf("Processing <s1>\n");
 
-		switch(next_token())
-		{
-			case WORD2:
-			 	verb();
-				tense();
-				match(PERIOD);
-				break;
-			case WORD1: case PRONOUN:
-				noun();
-				s2();
-				break;
-			default:
-				syntaxerror2("s1");
-				return;
-		}
+	switch(next_token())
+	{
+		case WORD2:
+		 	verb();
+			tense();
+			match(PERIOD);
+			break;
+		case WORD1: case PRONOUN:
+			noun();
+			statement2();
+			break;
+		default:
+			syntaxerror2("s1");
+			return;
+	}
 }
 
 //Done by: Erik Leung
-void s2()
+void statement2()
 {
 	if (trace != 0)
 		printf("Processing <s2>\n");
 
-		switch(next_token())
-		{
-			case IS: case WAS:
-				be();
-				match(PERIOD);
-				break;
-			case DESTINATION:
-				match(DESTINATION);
-				verb();
-				tense();
-				match(PERIOD);
-				break;
-			case OBJECT:
-				match(OBJECT);
-				s3();
-				break;
-			default:
-				syntaxerror2("s2");
-				return;
-		}
+	switch(next_token())
+	{
+		case IS: case WAS:
+			be();
+			match(PERIOD);
+			break;
+		case DESTINATION:
+			match(DESTINATION);
+			verb();
+			tense();
+			match(PERIOD);
+			break;
+		case OBJECT:
+			match(OBJECT);
+			statement3();
+			break;
+		default:
+			syntaxerror2("s2");
+			return;
+	}
 }
 
 //Done by: Erik Leung
-void s3()
+void statement3()
 {
 	if (trace != 0)
 		printf("Processing <s3>\n");
 
-		switch(next_token())
-		{
-			case WORD2:
-				verb();
-				tense();
-				match(PERIOD);
-				break;
-			case WORD1: case PRONOUN:
-				noun();
-				match(DESTINATION);
-				verb();
-				tense();
-				match(PERIOD);
-				break;
-			default:
-				syntaxerror2("s3");
-				return;
-		}
+	switch(next_token())
+	{
+		case WORD2:
+			verb();
+			tense();
+			match(PERIOD);
+			break;
+		case WORD1: case PRONOUN:
+			noun();
+			match(DESTINATION);
+			verb();
+			tense();
+			match(PERIOD);
+			break;
+		default:
+			syntaxerror2("s3");
+			return;
+	}
 }
 
 //Done by: Erik Leung
@@ -396,12 +336,142 @@ void tense()
 		}
 }
 
-/*****************************Scanner Functions**********************************/
+//Done by: Aaron
+bool match(token_type thetype)
+{
+		if (next_token() != thetype)	//mismatch
+		{
+			syntaxerror1(thetype);
+			//only continues if user chose to correct error
+			token_available = false;
+			return true;
+		}
+		else //matched
+		{
+			cout << "Matched " << conversion[thetype-1] << endl;
 
-//word checker prototype
-void dictionary(token_type&, string);
+			token_available = false;	//remove token
+			return true;
+		}
+}
 
-// Period found, returns token
+//Done by: Aaron
+token_type next_token()
+{
+	if (!token_available)	//no saved token
+	{
+		scanner(saved_token, saved_lexeme);	//finds next token and lexeme
+		token_available = true;			//has saved token
+	}
+	return saved_token;	//return saved token
+}
+
+//Syntax Errors
+//Done by: Paul
+void syntaxerror1(token_type thetype)	//when match() function does not match
+{
+	//mismatch
+	string expected;	//expected type
+	int choice = 0;
+
+	expected = conversion[thetype-1];	//convert enum type to string for output
+	
+	//output to screen and error.txt file
+	cout << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
+	errors << "SYNTAX ERROR: expected " << expected << " but found " << saved_lexeme << endl;
+
+	//Option to change the type to the expected type and continue parsing file
+	printf("If you'd like to change the type to the expected type and continue parsing, enter 1: ");
+	cin >> choice;
+
+	if (choice == 1)
+		saved_token = thetype;	//change and continue
+	else
+		exit(EXIT_FAILURE);	//end program
+}
+
+//Done by: Paul
+void syntaxerror2(string pFunction)	//when a switch statement goes to default
+{
+	//output to screen and error.txt file
+	cout << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
+	errors << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
+	exit(EXIT_FAILURE);	//always ends program
+}
+
+/*****************************End of Parser Functions***************************/
+
+
+
+/*****************************Scanner Functions*********************************/
+
+//Scanner processes only one word each time it is called
+//Done by: Aaron & Erik
+void scanner(token_type& a, string& w)
+{
+	bool result = true;	//default, word is assumed valid
+
+	printf("Scanner was called...\n");
+	toParse >> w;  //read word
+	
+	if(w == "eofm")	//eof found
+	{
+		a = EOFM;
+		return;
+	}
+	else if(w == ".")	//period calls period DFA
+	{
+		period(a);
+		return;
+	}
+
+	result = startstate(w);		//enter DFA
+
+	cout << "token: " << a << "\nword: " << w << endl;
+
+	if (result == false)	//result of DFA is false, word is invalid
+	{
+		cout << "Lexical error: " << saved_lexeme << " is not a valid token" << endl;
+		a = ERROR;
+	}
+	else	//word is valid
+	{
+		if (isupper(w[w.size() - 1]))	//check last character in word for Uppercase
+		{
+			a = WORD2;	//verb
+		}
+		else				//not uppercase so default WORD1, check against reservedwords array
+		{
+			a = WORD1;	//default WORD1, check if reserved
+			dictionary(a, w);
+		}
+	}	
+}
+
+//Done by: Aaron & Erik
+void dictionary(token_type &a, string w)
+{
+	//while reservedwords can read in
+	for (int i = 0; i < arraySize; i++)
+	{
+		if (reservedwords[i] == w)	//if reservedword == givenword
+		{
+			i++;	//move to type
+			for(int step = 0; step < 16; step++)
+			{
+				if(conversion[step] == reservedwords[i])	//if reservedtype == giventype
+				{
+					
+					a = static_cast<token_type>(step);	//set type to array position, convert int to enum
+					return;
+				} 
+			}
+			return;
+		}i++;	//move to next word
+	}
+	return;
+}
+
 // ** Done by: Aaron & Erik
 void period(token_type& a)
 {
@@ -409,248 +479,9 @@ void period(token_type& a)
 	return;
 }
 
-//bools: rewritten by Aaron
-//check vowels
-bool vowels(string w, int& charpos)
-{
-	if (w[charpos + 1] == 'n')	//Vn
-	{
-		charpos++; charpos++;
-		return true;
-	}
-	else
-	{
-		charpos++;
-		return true;
-	}
-}
+/***************************Bools******************************/
 
-//check consonants
-bool consonants(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//CV
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 0 && w[charpos] == 'y')	//Cy
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o')) //CyV
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 2 && w[charpos] == 'n')	//-n
-	{
-		charpos++;
-		state = 3;
-	}
-	if (state == 2 || state == 3)
-		return true;
-	else
-		return false;
-}
-
-bool sRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && w[charpos] == 'h')	//sh
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'o'))	//sha shi shu sho
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//sa su se so
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 2 && w[charpos] == 'n')	//-n
-	{
-		state = 3;
-		charpos++;
-	}
-	if (state == 2 || state == 3)
-		return true;
-	else
-		return false;
-}
-
-bool zRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//sa su se so
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && w[charpos] == 'n')	//-n
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 1 || state == 2)
-		return true;
-	else
-		return false;
-}
-
-bool jRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && w[charpos] == 'i')	//ji
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && w[charpos] == 'n')	//jin
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 1 || state == 2)
-		return true;
-	else
-		return false;
-}
-
-bool tRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && w[charpos] == 's')	//ts
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && w[charpos] == 'u')	//tsu
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'e' || w[charpos] == 'o'))	//ta te to
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 2 && w[charpos] == 'n')	//-n
-	{
-		state = 3;
-		charpos++;
-	}
-	if (state == 2 || state == 3)
-		return true;
-	else
-		return false;
-}
-
-bool dRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'e' || w[charpos] == 'o'))	//da de do
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && w[charpos] == 'n')
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 1 || state == 2)
-		return true;
-	else
-		return false;
-}
-
-bool cRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && w[charpos] == 'h')	//ch
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && w[charpos] == 'i')	//chi
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 2 && w[charpos] == 'n')	//-n
-	{
-		state = 3;
-		charpos++;
-	}
-
-	if (state == 2 || state == 3)
-		return true;
-	else
-		return false;
-}
-
-bool wRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && w[charpos] == 'a')	//wa
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && w[charpos] == 'n')	//wan
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == 1 || state == 2)
-		return true;
-	else
-		return false;
-}
-
-bool yRoot(string w, int& charpos)
-{
-	int state = 0;
-	charpos++;
-
-	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o'))	//ya yu yo
-	{
-		state = 1;
-		charpos++;
-	}
-	if (state == 1 && w[charpos] == 'n')	//yan yun yon
-	{
-		state = 2;
-		charpos++;
-	}
-	if (state == (1 || 2))
-		return true;
-	else
-		return false;
-}
-
+//Done by: Paul & Aaron
 bool startstate(string w)	//also final state
 {
 	int charpos = 0;
@@ -701,115 +532,256 @@ bool startstate(string w)	//also final state
 	return true;
 }
 
-//Done by: Aaron & Erik
-void dictionary(token_type &a, string w)
+//Bools
+
+//Done by: Paul & Aaron
+bool vowels(string w, int& charpos)
 {
-	//while reservedwords can read in
-	for (int i = 0; i < arraySize; i++)
+	if (w[charpos + 1] == 'n')	//Vn
 	{
-		if (reservedwords[i] == w)
-		{
-			i++;
-			if (reservedwords[i] == "VERB")
-				a = VERB;
-			else if (reservedwords[i] == "VERBNEG")
-				a = VERBNEG;
-			else if (reservedwords[i] == "VERBPAST")
-				a = VERBPAST;
-			else if (reservedwords[i] == "VERBPASTNEG")
-				a = VERBPASTNEG;
-			else if (reservedwords[i] == "IS")
-				a = IS;
-			else if (reservedwords[i] == "WAS")
-				a = WAS;
-			else if (reservedwords[i] == "OBJECT")
-				a = OBJECT;
-			else if (reservedwords[i] == "SUBJECT")
-				a = SUBJECT;
-			else if (reservedwords[i] == "DESTINATION")
-				a = DESTINATION;
-			else if (reservedwords[i] == "PRONOUN")
-				a = PRONOUN;
-			else if (reservedwords[i] == "CONNECTOR")
-				a = CONNECTOR;
-			return;
-		}i++;
+		charpos++; charpos++;
+		return true;
 	}
-	return;
+	else
+	{
+		charpos++;
+		return true;
+	}
 }
 
-// Scanner processes only one word each time it is called
-// ** Done by: Aaron & Erik
-void scanner(token_type& a, string& w)
+//Done by: Paul & Aaron
+bool consonants(string w, int& charpos)
 {
-	printf("Scanner was called...\n");
-	toParse >> w;  //read word
+	int state = 0;
+	charpos++;
 
-	bool result = true;	//default, word is assumed valid
-
-	if(w == "eofm")	//eof found
+	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//CV
 	{
-		a = EOFM;
-		return;
+		state = 2;
+		charpos++;
 	}
-
-	if (w == ".")	//period calls period DFA
+	if (state == 0 && w[charpos] == 'y')	//Cy
 	{
-		period(a);
-		return;
+		state = 1;
+		charpos++;
 	}
-
-	result = startstate(w);		//enter DFA
-
-	if (result == false)	//result of DFA is false, word is invalid
+	if (state == 1 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o')) //CyV
 	{
-		cout << "Lexical error: " << saved_lexeme << " is not a valid token" << endl;
-		a = ERROR;
+		state = 2;
+		charpos++;
 	}
-	else	//word is valid
+	if (state == 2 && w[charpos] == 'n')	//-n
 	{
-		if (isupper(w[w.size() - 1]))	//check last character in word for Uppercase
-		{
-			a = WORD2;
-		}
-		else				//not uppercase so default WORD1, check against reservedwords array
-		{
-			a = WORD1;
-			dictionary(a, w);
-		}
-	}	
-}//the end
-
-/*******************************************************************************/
-
-//Done by: Aaron
-int main()
-{
-	//- opens the input file
-	//- calls the <story> to start parsing
-	//- closes the input file 
-
-	string uInput;	//user input name of file to open
-
-	printf("Please enter the name of the file you'd like to parse: ");
-	getline(cin, uInput);
-
-	toParse.open(uInput.c_str());		//open test file
-	errors.open("errors.txt", fstream::out);
-
-	if (!toParse.is_open())	//check if file opened
-	{
-		printf("Error opening file. Ending program...\n");
-		exit(EXIT_FAILURE);
+		charpos++;
+		state = 3;
 	}
-
-	printf("Would you like the parse to be traced?\nEnter 0 to turn off trace: ");
-	cin >> trace;	//option to turn trace off
-
-	story();		//begin parse
-
-	errors.close();
-	toParse.close();	//close file
-
-	return 0;
+	if (state == 2 || state == 3)
+		return true;
+	else
+		return false;
 }
+
+//Done by: Paul & Aaron
+bool sRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && w[charpos] == 'h')	//sh
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'o'))	//sha shi shu sho
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//sa su se so
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 2 && w[charpos] == 'n')	//-n
+	{
+		state = 3;
+		charpos++;
+	}
+	if (state == 2 || state == 3)
+		return true;
+	else
+		return false;
+}
+
+//Done by: Paul & Aaron
+bool zRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//sa su se so
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && w[charpos] == 'n')	//-n
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 1 || state == 2)
+		return true;
+	else
+		return false;
+}
+
+//Done by: Paul & Aaron
+bool jRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && w[charpos] == 'i')	//ji
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && w[charpos] == 'n')	//jin
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 1 || state == 2)
+		return true;
+	else
+		return false;
+}
+
+//Done by: Paul & Aaron
+bool tRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && w[charpos] == 's')	//ts
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && w[charpos] == 'u')	//tsu
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'e' || w[charpos] == 'o'))	//ta te to
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 2 && w[charpos] == 'n')	//-n
+	{
+		state = 3;
+		charpos++;
+	}
+	if (state == 2 || state == 3)
+		return true;
+	else
+		return false;
+}
+
+//Done by: Paul & Aaron
+bool dRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'e' || w[charpos] == 'o'))	//da de do
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && w[charpos] == 'n')	//-n
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 1 || state == 2)
+		return true;
+	else
+		return false;
+}
+
+//Done by: Paul & Aaron
+bool cRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && w[charpos] == 'h')	//ch
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && w[charpos] == 'i')	//chi
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 2 && w[charpos] == 'n')	//-n
+	{
+		state = 3;
+		charpos++;
+	}
+
+	if (state == 2 || state == 3)
+		return true;
+	else
+		return false;
+}
+
+//Done by: Paul & Aaron
+bool wRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && w[charpos] == 'a')	//wa
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && w[charpos] == 'n')	//wan
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == 1 || state == 2)
+		return true;
+	else
+		return false;
+}
+
+//Done by: Paul & Aaron
+bool yRoot(string w, int& charpos)
+{
+	int state = 0;
+	charpos++;
+
+	if (state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'o'))	//ya yu yo
+	{
+		state = 1;
+		charpos++;
+	}
+	if (state == 1 && w[charpos] == 'n')	//yan yun yon
+	{
+		state = 2;
+		charpos++;
+	}
+	if (state == (1 || 2))
+		return true;
+	else
+		return false;
+}
+
+/*****************************End of Scanner Functions************************************/
+
