@@ -1,9 +1,9 @@
-/*****************parser.cpp**************/
+/*****************translator.cpp**************/
 //Authors: Aaron Brunette, Paul Rowe, Erik Leung
-//Last updated: 2017/12/08
+//Last updated: 2017/12/09
 //Compiled with g++
 //Written on vim, visual studio, github
-//Purpose: Parse a file of romanji for proper spelling
+//Purpose: Translate a file of romanji for proper spelling
 // and sentence structure.
 //
 //	 	MIT License
@@ -17,19 +17,19 @@
 #include <time.h>		//time
 using namespace std;
 
-//=================================================
-// File parser.cpp written by Group Number: 03
-//=================================================
+// CS421 File translator.cpp
 
 // ** Be sure to put the name of the programmer above each function
-// i.e. Done by:
+// ** Be sure to put the corresponding rule with semantic routines
+//    above each function
 
-// ** Need syntaxerror1 and syntaxerror2 functions (each takes 2 args)
-
-// ** Need the updated match and next_token (with 2 global vars)
-
-// ** Make each non-terminal into a function here
-// ** Be sure to put the corresponding grammar rule above each function
+// ** Additions to parser.cpp here:
+//    getEword - using the current lexeme, look up the English word
+//               in the Lexicon if it is there -- save the result
+//               in saved_E_word
+//    gen(line_type) - using the line type,
+//                     display a line of an IR (saved_E_word or saved_token
+//                     is used)
 
 //token vars
 enum token_type { //type creation
@@ -62,8 +62,9 @@ char errorCorr = 'n';			//error correction off by default
 char errorOutput = 'n';			//error output off by default
 char removeErrors = 'n';		//for making a brand new errors file
 
-//transistion table for grammer
-//typedef unordered_map<token_type, token_type> grammarMap;
+//Translator function prototypes
+void getEword();
+void gen(saved_token);
 
 //reservedwords array initialization
 const int arraySize = 38;
@@ -115,9 +116,11 @@ bool yRoot(string, int&);
 //Done by: Aaron
 int main()
 {
-	//- opens the input file
-	//- calls the <story> to start parsing
-	//- closes the input file 
+	//- opens the output file translated.txt
+  	//- opens the input file
+  	//- calls the <story> to start parsing
+  	//- closes the input file
+  	//- closes traslated.txt
 
 	string uInput;	//user input name of file to open
 
@@ -405,7 +408,7 @@ token_type next_token()
 		scanner(saved_token, saved_lexeme);	//finds next token and lexeme
 		token_available = true;			//has saved token
 	}
-	return saved_token;	//return saved token
+	return saved_token;
 }
 
 //Done by: Aaron
