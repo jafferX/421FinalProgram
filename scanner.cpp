@@ -115,8 +115,8 @@ int scanner(tokentype& a, string& w)
 		a = PERIOD;
 		return 1;
 	}
- 	else
-		result = startstate(w);		//enter DFA
+
+	result = startstate(w);		//enter DFA
 
 	if(result == false)	//result of DFA is false, word is invalid
 		a = ERROR;
@@ -150,7 +150,7 @@ void dictionary(tokentype &a, string w)
 					a = static_cast<tokentype>(step);	//set type to array position, convert int to enum
 					return;
 				} 
-			}
+			} return;
 		}i++;
 	}
 }
@@ -211,8 +211,6 @@ bool startstate(string w)	//also final state
 //done by: Paul & Aaron
 bool vowels(string w, int& charpos)
 {
-	int state = 0;
-	
 	if(w[charpos + 1] == 'n')	//Vn
 	{
 		charpos++; charpos++;
