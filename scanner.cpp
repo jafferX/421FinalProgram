@@ -1,6 +1,6 @@
 /*****************scanner.cpp**************/
 //Author: Aaron Brunette, Erik Leung, Paul Rowe
-//Last updated: 2017/11/30
+//Last updated: 2017/12/08
 //Compiled with g++
 //Written on vim & visual studio
 //Purpose: To scan a file of romanji words and check if they are
@@ -68,7 +68,7 @@ int main()
 {
   	tokentype thetype;	//hole the type of the word being scanned
   	string theword; 	//hold the word being scanned
-	int eof = 1;		//eof int
+	int eof = 1;		//eof flag
 
 	string inputfile;	//user input filename
 	printf("Please enter the name of file to be scanned: ");
@@ -88,18 +88,17 @@ int main()
 
 		if(eof == -1)
 			return 0;
-	
-		//optimize this with operator overload
+
 		if(thetype == ERROR)	
 		{
 			cout << "Lexical error: " << theword << " is not a valid token" << endl;
 			return 1;
 		}
-		cout << "Type is: " << conversion[thetype-1] << endl;
+		cout << "Type is: " << conversion[thetype] << endl;
 		cout << "Word is: " << theword << endl << endl;   
     	}
 	toRead.close();		//close user input file
-}//the end
+}
 
 // Scanner processes only one word each time it is called
 // ** Done by: Aaron & Erik
@@ -112,9 +111,12 @@ int scanner(tokentype& a, string& w)
 	if(w == "eofm")		//if end of file
 		return -1;	
 	else if(w == ".")	//period calls period DFA
+	{
 		a = PERIOD;
- 
-	result = startstate(w);		//enter DFA
+		return 1;
+	}
+ 	else
+		result = startstate(w);		//enter DFA
 
 	if(result == false)	//result of DFA is false, word is invalid
 		a = ERROR;
@@ -134,18 +136,17 @@ int scanner(tokentype& a, string& w)
 
 //Done by: Aaron & Erik
 void dictionary(tokentype &a, string w)
-{	
+{
 	//while reservedwords can read in
-	for(int i; i < arraySize; i++)
+	for(int i = 0; i < arraySize; i++)
 	{
 		if(reservedwords[i] == w)
 		{
 			i++;
 			for(int step = 0; step < 16; step++)
-			{
+			{	
 				if(conversion[step] == reservedwords[i])	//if reservedtype == giventype
 				{
-					
 					a = static_cast<tokentype>(step);	//set type to array position, convert int to enum
 					return;
 				} 
@@ -154,6 +155,8 @@ void dictionary(tokentype &a, string w)
 	}
 }
 
+//Sentence -> vowel | consonant | s | z | j | t | d | c | w | y
+//Done by: Paul
 bool startstate(string w)	//also final state
 {
 	int charpos = 0;
@@ -166,7 +169,7 @@ bool startstate(string w)	//also final state
 			case 'a': case 'i': case 'u': case 'e': case 'o':
 				result = vowels(w, charpos);
 				break;
-			case 'k': case 'n': case 'h': case 'm': case 'r': case 'g': case 'b': case 'p':
+			case 'n': case 'k': case 'h': case 'm': case 'r': case 'g': case 'b': case 'p':
 				result = consonants(w, charpos);
 				break;
 			case 's':
@@ -204,8 +207,8 @@ bool startstate(string w)	//also final state
 	return true;
 }
 
-//Bools, done by: Paul & Aaron
-//check vowels
+//vowel -> ( a | i | u | e | o )[n]
+//done by: Paul & Aaron
 bool vowels(string w, int& charpos)
 {
 	int state = 0;
@@ -222,12 +225,19 @@ bool vowels(string w, int& charpos)
 	}
 }
 
-//check consonants
+//consonant -> ( n | k | h | m | r | g | b | p )[n]
+//done by: Paul & Aaron
 bool consonants(string w, int& charpos)
 {	
 	int state = 0;
+	char hold = w[charpos];
 	charpos++;
 
+	if(state == 0 && w[charpos] == hold && (hold == 'k' || hold == 'p'))	//little tsu, CC
+	{
+		state = 0;
+		charpos++;
+	}
 	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//CV
 	{	
 		state = 2;
@@ -254,11 +264,18 @@ bool consonants(string w, int& charpos)
 		return false;
 }
 
+//s -> [s]( a | i | u | o )[n] | [s]( ha | hi | hu | ho )[n]
+//done by: Paul & Aaron
 bool sRoot(string w, int& charpos)
 {
 	int state = 0;
 	charpos++;
 	
+	if(state == 0 && w[charpos] == 's')	//little tsu, ss
+	{
+		state = 0;
+		charpos++;
+	}
 	if(state == 0 && w[charpos] == 'h')	//sh
 	{
 		state = 1;
@@ -285,12 +302,14 @@ bool sRoot(string w, int& charpos)
 		return false;
 }
 
+//z -> ( a | u | e | o )[n]
+//done by: Paul & Aaron
 bool zRoot(string w, int& charpos)
 {
 	int state = 0;
 	charpos++;
 
-	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//sa su se so
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'u' || w[charpos] == 'e' || w[charpos] == 'o'))	//za zu ze zo
 	{
 		state = 1;
 		charpos++;
@@ -306,17 +325,19 @@ bool zRoot(string w, int& charpos)
 		return false;
 }
 
+//j -> ( a | i | u | o )[n]
+//done by: Paul & Aaron
 bool jRoot(string w, int& charpos)
 {
 	int state = 0;
 	charpos++;
 
-	if(state == 0 && w[charpos] == 'i')	//ji
+	if(state == 0 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'o'))	//ja ji ju jo
 	{
 		state = 1;
 		charpos++;
 	}
-	if(state == 1 && w[charpos] == 'n')	//jin
+	if(state == 1 && w[charpos] == 'n')	//-n
 	{
 		state = 2;
 		charpos++;
@@ -327,11 +348,18 @@ bool jRoot(string w, int& charpos)
 		return false;
 }
 
+//t -> [t](su)[n] | [t]( a | e | o )[n]
+//done by: Paul & Aaron
 bool tRoot(string w, int& charpos)
 {
 	int state = 0;
 	charpos++;
 	
+	if(state == 0 && w[charpos] == 't')	//little tsu, tt
+	{
+		state = 0;
+		charpos++;
+	}
 	if(state == 0 && w[charpos] == 's')	//ts
 	{
 		state = 1;
@@ -346,7 +374,7 @@ bool tRoot(string w, int& charpos)
 	{
 		state = 2;
 		charpos++;
-	}
+	}	
 	if(state == 2 && w[charpos] == 'n')	//-n
 	{
 		state = 3;
@@ -358,6 +386,8 @@ bool tRoot(string w, int& charpos)
 		return false;
 }
 
+//d -> ( a | e | o)[n]
+//done by: Paul & Aaron
 bool dRoot(string w, int& charpos)
 {
 	int state = 0;
@@ -368,7 +398,7 @@ bool dRoot(string w, int& charpos)
 		state = 1;
 		charpos++;
 	}
-	if(state == 1 && w[charpos] == 'n')
+	if(state == 1 && w[charpos] == 'n')	//-n
 	{
 		state = 2;
 		charpos++;
@@ -379,17 +409,24 @@ bool dRoot(string w, int& charpos)
 		return false;
 }
 
+//c -> [c]( ha | hi | hu | ho )[n]
+//done by: Paul & Aaron
 bool cRoot(string w, int& charpos)
 {
 	int state = 0;
 	charpos++;
 	
+	if(state == 0 && w[charpos] == 'c')	//little tsu
+	{
+		state = 0;
+		charpos++;
+	}
 	if(state == 0 && w[charpos] == 'h')	//ch
 	{
 		state = 1;
 		charpos++;
 	}
-	if(state == 1 && w[charpos] == 'i')	//chi
+	if(state == 1 && (w[charpos] == 'a' || w[charpos] == 'i' || w[charpos] == 'u' || w[charpos] == 'o'))	//cha chi chu cho
 	{
 		state = 2;
 		charpos++;
@@ -399,13 +436,14 @@ bool cRoot(string w, int& charpos)
 		state = 3;
 		charpos++;
 	}
-
 	if(state == 2 || state == 3)
 		return true;
 	else
 		return false;
 }
 
+//w -> a[n]
+//done by: Paul & Aaron
 bool wRoot(string w, int& charpos)
 {
 	int state = 0;
@@ -427,6 +465,8 @@ bool wRoot(string w, int& charpos)
 		return false;
 }
 
+//y -> ( a | u | o )[n]
+//done by: Paul & Aaron
 bool yRoot(string w, int& charpos)
 {
 	int state = 0;
