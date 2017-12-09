@@ -90,10 +90,8 @@ int main()
 			return 0;
 
 		if(thetype == ERROR)	
-		{
 			cout << "Lexical error: " << theword << " is not a valid token" << endl;
-			return 1;
-		}
+
 		cout << "Type is: " << conversion[thetype] << endl;
 		cout << "Word is: " << theword << endl << endl;   
     	}
@@ -115,8 +113,8 @@ int scanner(tokentype& a, string& w)
 		a = PERIOD;
 		return 1;
 	}
-
-	result = startstate(w);		//enter DFA
+ 	else
+		result = startstate(w);		//enter DFA
 
 	if(result == false)	//result of DFA is false, word is invalid
 		a = ERROR;
@@ -134,6 +132,7 @@ int scanner(tokentype& a, string& w)
 	}
 }//the end
 
+//Searches through japanese dictionary for type
 //Done by: Aaron & Erik
 void dictionary(tokentype &a, string w)
 {
@@ -150,7 +149,7 @@ void dictionary(tokentype &a, string w)
 					a = static_cast<tokentype>(step);	//set type to array position, convert int to enum
 					return;
 				} 
-			} return;
+			}
 		}i++;
 	}
 }
@@ -211,6 +210,8 @@ bool startstate(string w)	//also final state
 //done by: Paul & Aaron
 bool vowels(string w, int& charpos)
 {
+	int state = 0;
+	
 	if(w[charpos + 1] == 'n')	//Vn
 	{
 		charpos++; charpos++;
@@ -480,7 +481,7 @@ bool yRoot(string w, int& charpos)
 		state = 2;
 		charpos++;
 	}
-	if(state == (1 || 2))
+	if(state == 1 || state == 2)
 		return true;
 	else
 		return false;
