@@ -3,8 +3,8 @@
 //Last updated: 2017/12/09
 //Compiled with g++
 //Written on vim, visual studio, github
-//Purpose: Translate a file of romanji for proper spelling
-// and sentence structure.
+//Purpose: Translate romanji into english while catching
+// spelling and gramatical errors.
 //
 //	 	MIT License
 /*****************************************/
@@ -15,21 +15,12 @@
 #include <fstream>		//fstream
 #include <string>		//string
 #include <time.h>		//time
+#include <unordered_map>	//english lexicon
 using namespace std;
 
-// CS421 File translator.cpp
-
-// ** Be sure to put the name of the programmer above each function
-// ** Be sure to put the corresponding rule with semantic routines
-//    above each function
-
-// ** Additions to parser.cpp here:
-//    getEword - using the current lexeme, look up the English word
-//               in the Lexicon if it is there -- save the result
-//               in saved_E_word
-//    gen(line_type) - using the line type,
-//                     display a line of an IR (saved_E_word or saved_token
-//                     is used)
+//=================================================
+// File translator.cpp written by Group Number: 03
+//=================================================
 
 //token vars
 enum token_type { //type creation
@@ -49,10 +40,13 @@ string conversion[16] = {
 token_type saved_token;			//next token from scanner, default is empty
 string saved_lexeme;			//next word from scanner, default empty
 bool token_available = false;		//flag, default is unavailable
+string saved_E_word;			//hold saved english word for gen
+string uInput;				//user input name of file to open
 
 //global files
 fstream toParse;			//global stream to parse file
 fstream errors;				//global stream to collect error messages in file
+fstream translated;			//hold translated words
 
 //extra feature variables
 char sTrace = 'n';			//scanner trace off by default
@@ -63,10 +57,10 @@ char errorOutput = 'n';			//error output off by default
 char removeErrors = 'n';		//for making a brand new errors file
 
 //Translator function prototypes
-void getEword();
-void gen(saved_token);
+void getEword();			//get english word
+void gen(string);			//output translation
 
-//reservedwords array initialization
+//japanese word lexicon
 const int arraySize = 38;
 string reservedwords[arraySize] = {
 "masu", "VERB", "masen", "VERBNEG", "mashita", "VERBPAST",
@@ -76,6 +70,36 @@ string reservedwords[arraySize] = {
 "kanojo", "PRONOUN", "sore", "PRONOUN", "mata", "CONNECTOR",
 "soshite", "CONNECTOR", "shikashi", "CONNECTOR",
 "dakara", "CONNECTOR", "eofm", "EOFM" };
+
+//english lexicon
+unordered_map <string, string> dict = {
+                {"watashi", "I/me"},
+                {"anata", "you"},
+                {"kare", "he/him"},
+                {"kanojo", "she/her"},
+                {"sore", "it"},
+                {"mata", "also"},
+                {"soshite", "Then"},
+                {"shikashi", "however"},
+                {"dakara", "Therefore"},
+                {"ikI", "go"},
+                {"tabeE", "eat"},
+                {"shiE", "do" },
+                {"kiE", "come"},
+                {"tatakaI", "fight"},
+                {"benkyou", "study"},
+                {"kore", "this"},
+                {"nai", "not"},
+                {"seito", "student"},
+                {"naki", "cry"},
+                {"yorokobI", "rejoice"},
+                {"toire", "toilet"},
+                {"kanashii", "sad"},
+                {"agE", "give"},
+                {"gohan", "meal"},
+                {"sensei", "teacher"},
+                {"tesuto", "test"},
+};
 
 //parser function prototypes
 void story();
@@ -113,51 +137,82 @@ bool cRoot(string, int&);
 bool wRoot(string, int&);
 bool yRoot(string, int&);
 
+//Driver, opens files and runs parser
 //Done by: Aaron
 int main()
 {
-	//- opens the output file translated.txt
-  	//- opens the input file
-  	//- calls the <story> to start parsing
-  	//- closes the input file
-  	//- closes traslated.txt
-
-	string uInput;	//user input name of file to open
-
-	printf("Input file name: ");
+	printf("\nEnter the name of the file you want to translate: ");
 	getline(cin, uInput);	
-
+	
+	//new file every time
+	translated.open("translated.txt", fstream::out | fstream::trunc);
 	toParse.open(uInput.c_str());		//open test file	
 
-	if (!toParse.is_open())	//check if file opened
+	if(!toParse.is_open())	//check if file opened correctly
 	{
 		printf("Error opening file. Ending program...\n");
 		exit(EXIT_FAILURE);
-	}	
+	}		
 
+	story();		//begin parse		
+
+	toParse.close();
+	translated.close();
+
+	return 0;
+}
+
+//************************Translator functions****************************//
+
+//Searches the lexicon for the english equivalent
+//Done by: Erik Leung
+void getEword()
+{
+	auto search = dict.find(saved_lexeme);
+            if (search != dict.end())
+            {
+                saved_E_word = search->second;
+		return;
+            }
+            saved_E_word = saved_lexeme;	
+}
+
+//Outputs the internal representation to the screen and translation file
+//Done by: Paul
+void gen(string theRep)
+{
+	if(theRep == "TENSE")
+	{
+		cout << theRep << ": " << conversion[saved_token] << endl;
+		translated << theRep << ": " << conversion[saved_token] << endl;
+	}
+	else
+	{
+		cout << theRep << ": " << saved_E_word << endl;
+		translated << theRep << ": " << saved_E_word << endl;
+	}
+}
+
+//*************************End of translator functions***********************//
+
+/*********************Parser Functions************************/
+
+//<story> -> <sentence> { <sentence> }
+//Done by: Erik Leung
+void story()
+{
 	checking();	//check what features the user wants
 
-	if(errorOutput == 'y')	//determine errors.txt file creation
-	{
-		if(removeErrors == 'y')
-		{
-			if(remove("errors.txt"))
-				perror("Error deleting file\n");
-			else
-				printf("New errors.txt file started\n");
-		}
-		errors.open("errors.txt", fstream::out | fstream::app);
-	}	
+	if (pTrace == 'y')
+		printf("Processing <story>\n");
 
-	//time variables for errors.txt
-	time_t rawtime;
-	struct tm * timeinfo;
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-
-	errors << uInput.c_str() << "\t" << asctime(timeinfo) << endl;
-
-	story();		//begin parse
+	sentence();
+	translated << endl;
+	while(next_token() != EOFM)
+	{	
+		sentence();
+		translated << endl;
+	}
 
 	if(pTrace == 'y')
 		printf("\nSuccessfully parsed <story>\n");
@@ -170,27 +225,9 @@ int main()
 		errors << "-----------------------------------------------------------" << endl << endl;
 		errors.close();
 	}
-
-	toParse.close();	//close file
-
-	return 0;
 }
 
-/*********************Parser Functions************************/
-
-//<story> -> <sentence> { <sentence> }
-//Done by: Erik Leung
-void story()
-{
-	if (pTrace == 'y')
-		printf("Processing <story>\n");
-
-	sentence();
-	while (next_token() != EOFM)
-		sentence();
-}
-
-//<sentence> -> [CONNECTOR] <noun> SUBJECT <statement1>
+//<sentence> -> [CONNECTOR #getEword# #gen#] <noun> #genEword# SUBJECT #gen# <statement1>
 //Done by: Erik Leung
 void sentence()
 {
@@ -198,13 +235,18 @@ void sentence()
 		printf("\n====== Processing <s> ======\n");
 	
 	if(next_token() == CONNECTOR)	
+	{
 		match(CONNECTOR);
-
+		getEword();
+		gen("CONNECTOR");
+	}
 	switch(next_token())
 	{
 		case WORD1: case PRONOUN:
 			noun();
+			getEword();
 			match(SUBJECT);
+			gen("ACTOR");
 			statement1();
 			break;
 		default:
@@ -213,7 +255,7 @@ void sentence()
 	}
 }
 
-//<statement1> -> <verb> <tense> PERIOD | <noun> <statement2>
+//<statement1> -> <verb> #genEword# #gen# <tense> #gen# PERIOD | <noun> #genEword# <statement2>
 //Done by: Erik Leung
 void statement1()
 {
@@ -224,11 +266,16 @@ void statement1()
 	{
 		case WORD2:
 		 	verb();
+			getEword();
+			gen("ACTION");
 			tense();
+			gen("TENSE");
 			match(PERIOD);
+			printf("\n");
 			break;
 		case WORD1: case PRONOUN:
-			noun();	
+			noun();
+			getEword();	
 			statement2();
 			break;
 		default:
@@ -237,7 +284,7 @@ void statement1()
 	}
 }
 
-//<statement2> -> <be> PERIOD | DESTINATION <verb> <tense> PERIOD | OBJECT <statement3>
+//<statement2> -> #gen# <be> #gen# PERIOD | DESTINATION #gen# <verb> #genEword# #gen# <tense> #gen# PERIOD | OBJECT #gen# <statement3>
 //Done by: Erik Leung
 void statement2()
 {
@@ -247,17 +294,26 @@ void statement2()
 	switch(next_token())
 	{
 		case IS: case WAS:
+			gen("DESCRIPTION");
 			be();
+			gen("TENSE");
 			match(PERIOD);
+			printf("\n");
 			break;
 		case DESTINATION:
 			match(DESTINATION);
+			gen("TO");
 			verb();
+			getEword();
+			gen("ACTION");
 			tense();
+			gen("TENSE");
 			match(PERIOD);
+			printf("\n");
 			break;
 		case OBJECT:
 			match(OBJECT);
+			gen("OBJECT");
 			statement3();
 			break;
 		default:
@@ -266,7 +322,7 @@ void statement2()
 	}
 }
 
-//<statement3> -> <verb> <tense> PERIOD | <noun> DESTINATION <verb> <tense> PERIOD
+//<statement3> -> <verb> #genEword# #gen# <tense> PERIOD | <noun> #genEword# DESTINATION #gen# <verb> #getEword# #gen# <tense> #gen# PERIOD
 //Done by: Erik Leung
 void statement3()
 {
@@ -277,15 +333,25 @@ void statement3()
 	{
 		case WORD2:
 			verb();
+			getEword();
+			gen("ACTION");
 			tense();
+			gen("TENSE");
 			match(PERIOD);
+			printf("\n");
 			break;
 		case WORD1: case PRONOUN:
 			noun();
+			getEword();
 			match(DESTINATION);
+			gen("TO");
 			verb();
+			getEword();
+			gen("ACTION");
 			tense();
+			gen("TENSE");
 			match(PERIOD);
+			printf("\n");
 			break;
 		default:
 			syntaxerror2("<afterObject>");
@@ -380,6 +446,7 @@ void tense()
 	}
 }
 
+//Matches types to check for correct grammar
 //Done by: Aaron
 bool match(token_type thetype)
 {
@@ -393,13 +460,15 @@ bool match(token_type thetype)
 		else //matched
 		{
 			if(pTrace == 'y' || wantMatch == 'y')
-				cout << "Matched " << conversion[thetype] << endl;
+				printf("Matched %s\n", conversion[thetype].c_str());
+				//cout << "Matched " << conversion[thetype] << endl;
 
 			token_available = false;	//remove token
 			return true;
 		}
 }
 
+//Grabs the next word from the input file
 //Done by: Aaron
 token_type next_token()
 {
@@ -411,10 +480,11 @@ token_type next_token()
 	return saved_token;
 }
 
+//Asks the user what extra features they want
 //Done by: Aaron
 void checking()
 {
-	printf("Would you like to trace the scanner (y/n)? ");
+	printf("\nWould you like to trace the scanner (y/n)? ");
 	cin >> sTrace;
 
 	printf("Would you like to trace the parser (y/n)? ");
@@ -436,26 +506,47 @@ void checking()
 	{
 		printf("Would you like to start with a new errors.txt file (y/n)? ");
 		cin >> removeErrors;
-	}
+	
+		if(removeErrors == 'y')	//new file
+			errors.open("errors.txt", fstream::out | fstream::trunc);
+		else			//add to end of file
+			errors.open("errors.txt", fstream::out | fstream::app);
+	}	
+
+	printf("\n");
+
+	//time variables for errors.txt and translation.txt
+	time_t rawtime;
+	struct tm * timeinfo;
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	//output time into output files
+	errors << uInput.c_str() << "\t" << asctime(timeinfo) << endl;
+	translated << uInput.c_str() << "\t" << asctime(timeinfo) << endl;
 }
 
 //Syntax Errors
+
+//when match() function does not match
 //Done by: Paul
-void syntaxerror1(token_type thetype)	//when match() function does not match
+void syntaxerror1(token_type thetype)
 {
 	foundError = 1;
 	//output to screen and error.txt file
-	cout << "SYNTAX ERROR: expected " << conversion[thetype] << " but found " << saved_lexeme << endl;
+	//cout << "SYNTAX ERROR: expected " << conversion[thetype] << " but found " << saved_lexeme << endl;
+	printf("SYNTAX ERROR: expected %s but found %s\n", conversion[thetype].c_str(), saved_lexeme.c_str());
 	
 	if(errors.is_open())
 		errors << "SYNTAX ERROR: expected " << conversion[thetype] << " but found " << saved_lexeme << endl;
 	
-	if (errorCorr == 'y')	//error checking WIP, never goes here
+	if (errorCorr == 'y')	//starts error checking if enabled by user
 	{
-		cout << "Instead of "<< saved_lexeme << " try (eofm to exit): ";
-		cin >> saved_lexeme;
+		//cout << "Instead of "<< saved_lexeme << " try (eofm to exit): ";
+		printf("Instead of %s try (eofm to exit): ", saved_lexeme.c_str());
+		cin >> saved_lexeme;	//user inputs replacement string to try
 	}
-	else
+	else	//otherwise end as usual
 	{
 		errors << "-----------------------------------------------------------" << endl << endl;
 		exit(EXIT_FAILURE);	//end program
@@ -467,7 +558,8 @@ void syntaxerror2(string pFunction)	//when a switch statement goes to default
 {
 	foundError = 1;
 	//output to screen and error.txt file
-	cout << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
+	//cout << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
+	printf("SYNTAX ERROR: unexpected %s found in %s\n", saved_lexeme.c_str(), pFunction.c_str());
 
 	if(errors.is_open())
 		errors << "SYNTAX ERROR: unexpected " << saved_lexeme << " found in " << pFunction << endl;
@@ -488,7 +580,7 @@ void scanner(token_type& a, string& w)
 {
 	bool result = true;	//default, word is assumed valid	
 
-	if(!token_available)
+	if(!token_available)	//if error checking is enabled there will already be a word to be checked
 		toParse >> w;  //read word
 
 	if(sTrace == 'y')
@@ -523,9 +615,10 @@ void scanner(token_type& a, string& w)
 		}
 	}
 	if(sTrace == 'y')
-		cout << "Scanner saving token as: " << conversion[a] << endl;	
+		printf("Scanner saving token as: %s\n", conversion[a].c_str());
 }
 
+//Searches through the reservedwords array to find type
 //Done by: Aaron & Erik
 void dictionary(token_type &a, string w)
 {
@@ -538,7 +631,7 @@ void dictionary(token_type &a, string w)
 		if (reservedwords[i] == w)	//if reservedword == givenword
 		{
 			i++;	//move to type
-			for(int step = 0; step < 16; step++)
+			for(int step = 0; step < 16; step++)	//step through conversion array to find string
 			{
 				if(conversion[step] == reservedwords[i])	//if reservedtype == giventype
 				{
@@ -549,6 +642,8 @@ void dictionary(token_type &a, string w)
 		}i++;	//move to next word
 	} return;
 }
+
+
 
 /***************************Bools******************************/
 
